@@ -22,13 +22,13 @@ async def download_bag_file():
     await http_download_file(BASE_URL_BAG, "bag-light.gpkg")
 
 
-async def main(config):
-    mail_config = MailConfig(
-        api_key=config.get("mail", "api_key"),
-        domain=config.get("mail", "domain"),
-        default_sender_name=config.get("mail", "default_sender_name"),
-        default_sender_address=config.get("mail", "default_sender_address"),
-    )
+async def run(config):
+    # mail_config = MailConfig(
+    #     api_key=config.get("mail", "api_key"),
+    #     domain=config.get("mail", "domain"),
+    #     default_sender_name=config.get("mail", "default_sender_name"),
+    #     default_sender_address=config.get("mail", "default_sender_address"),
+    # )
 
     db_config = DatabaseConfig(
         database=config.get("database", "database"),
@@ -38,7 +38,7 @@ async def main(config):
         port=config.getint("database", "port"),
     )
 
-    fm = FunderMapsSDK(db_config=db_config, mail_config=mail_config)
+    fm = FunderMapsSDK(db_config=db_config)
 
     try:
         logger.info("Starting BAG loading process")
@@ -96,7 +96,7 @@ async def main(config):
         logger.error("An error occurred", exc_info=e)
 
 
-if __name__ == "__main__":
+def main():
     import colorlog
     from configparser import ConfigParser
 
@@ -114,4 +114,8 @@ if __name__ == "__main__":
 
     config.read("config.ini")
 
-    asyncio.run(main(config))
+    asyncio.run(run(config))
+
+
+if __name__ == "__main__":
+    main()

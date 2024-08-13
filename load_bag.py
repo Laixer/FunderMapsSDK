@@ -22,12 +22,12 @@ async def download_bag_file():
 
 
 async def run(config):
-    mail_config = MailConfig(
-        api_key=config.get("mail", "api_key"),
-        domain=config.get("mail", "domain"),
-        default_sender_name=config.get("mail", "default_sender_name"),
-        default_sender_address=config.get("mail", "default_sender_address"),
-    )
+    # mail_config = MailConfig(
+    #     api_key=config.get("mail", "api_key"),
+    #     domain=config.get("mail", "domain"),
+    #     default_sender_name=config.get("mail", "default_sender_name"),
+    #     default_sender_address=config.get("mail", "default_sender_address"),
+    # )
 
     db_config = DatabaseConfig(
         database=config.get("database", "database"),
@@ -37,7 +37,7 @@ async def run(config):
         port=config.getint("database", "port"),
     )
 
-    fm = FunderMapsSDK(db_config=db_config, mail_config=mail_config)
+    fm = FunderMapsSDK(db_config=db_config)
 
     try:
         logger.info("Starting BAG loading process")
@@ -103,14 +103,14 @@ async def run(config):
         logger.info("Finished")
     except Exception as e:
 
-        to = config.get("general", "report_to")
-        await fm.mail.send_simple_message(
-            Email(
-                to=to.split(","),
-                subject="Error loading BAG",
-                text="An error occurred while loading the BAG file",
-            )
-        )
+        # to = config.get("general", "report_to")
+        # await fm.mail.send_simple_message(
+        #     Email(
+        #         to=to.split(","),
+        #         subject="Error loading BAG",
+        #         text="An error occurred while loading the BAG file",
+        #     )
+        # )
 
         logger.error("An error occurred", exc_info=e)
 
