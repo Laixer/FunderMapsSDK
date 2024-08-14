@@ -13,9 +13,8 @@ colorlog = "^6.8.2"
 
 [tool.poetry.scripts]
 load_bag = "load_bag:main"
+refresh_models = "refresh_models:main"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-
