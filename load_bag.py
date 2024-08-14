@@ -44,9 +44,9 @@ async def run(config):
         db.drop_table("public.nummeraanduiding")
 
     logger.info("Loading BAG file into database")
-    await convert(
+    await fundermaps.gdal.convert(
         "bag-light.gpkg",
-        "PG:dbname=fundermaps host=db-pg-ams3-0-do-user-871803-0.b.db.ondigitalocean.com user=fundermaps password=AVNS_CtcfLEuVWqRXiK__gKt port=25060",
+        "PG:dbname=fundermaps",
     )
 
     with fundermaps.db as db:
