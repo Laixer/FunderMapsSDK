@@ -13,14 +13,6 @@ BASE_URL_BAG: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpk
 logger = logging.getLogger("loadbag")
 
 
-async def download_bag_file():
-    """
-    Download the BAG file from the PDOK service.
-    """
-
-    await http_download_file(BASE_URL_BAG, "bag-light.gpkg")
-
-
 async def run(config):
     db_config = DatabaseConfig(
         database=config.get("database", "database"),
@@ -33,7 +25,7 @@ async def run(config):
     fundermaps = FunderMapsSDK(db_config=db_config)
 
     logger.info("Downloading BAG file")
-    await download_bag_file()
+    await http_download_file(BASE_URL_BAG, "bag-light.gpkg")
 
     logger.info("Checking BAG file")
     if not os.path.exists("bag-light.gpkg"):
