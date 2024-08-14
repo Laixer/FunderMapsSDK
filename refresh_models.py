@@ -5,7 +5,7 @@ import logging
 from fundermapssdk import FunderMapsSDK
 from fundermapssdk.config import DatabaseConfig
 
-logger = logging.getLogger("loadbag")
+logger = logging.getLogger("refresh_models")
 
 
 async def run(config):
@@ -24,10 +24,12 @@ async def run(config):
     with fundermaps.db as db:
         # TODO: Check if enough data has changed to refresh models
 
-        logger.info("Refreshing models")
+        logger.info("Refreshing building models")
         db.refresh_materialized_view("data.building_sample")
         db.refresh_materialized_view("data.cluster_sample")
         db.refresh_materialized_view("data.supercluster_sample")
+
+        logger.info("Refreshing risk models")
         db.call("data.model_risk_manifest")
         db.reindex_table("data.model_risk_static")
 
