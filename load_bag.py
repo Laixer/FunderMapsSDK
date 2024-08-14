@@ -71,16 +71,6 @@ async def run(config):
         db.execute_script("load_residence")
         db.reindex_table("geocoder.residence")
 
-    to = config.get("general", "report_to")
-    await fundermaps.mail.send_simple_message(
-        Email(
-            to=to.split(","),
-            subject="BAG is loaded",
-            text="BAG is loaded",
-        )
-    )
-    logger.info("Email sent")
-
     with fundermaps.db as db:
         logger.info("Cleaning up database")
         db.drop_table("public.woonplaats")
