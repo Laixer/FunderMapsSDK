@@ -1,4 +1,5 @@
 import os
+import logging
 import asyncio
 
 from fundermapssdk.config import DatabaseConfig
@@ -9,7 +10,7 @@ class GDALProvider:
         self._sdk = sdk
         self.config = config
 
-    async def convert(self, input: str, output: str, *args):
+    async def convert(self, input: str, output: str, *args) -> bool:
         is_file = os.path.isfile(input)
 
         if is_file and not os.path.exists(input):
@@ -42,6 +43,13 @@ class GDALProvider:
         stdout, stderr = await process.communicate()
 
         if process.returncode == 0:
-            print(f"Command succeeded: {stdout.decode().strip()}")
+            self.__logger(
+                logging.DEBUG, f"Command succeeded: {stdout.decode().strip()}"
+            )
         else:
-            print(f"Command failed: {stderr.decode().strip()}")
+            self.__logger(logging.ERROR, f"Command failed: {stderr.decode().strip()}")
+
+        return process.returncode == 0
+
+    def __logger(self, level, message):
+        return self._sdk._logger.log(level, f"GDALProvider: {message}")
