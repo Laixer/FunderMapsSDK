@@ -37,3 +37,21 @@ class DatabaseConfig:
     user: str
     password: str
     port: int
+
+
+@dataclass
+class S3Config:
+    """
+    S3Config class represents the configuration for connecting to an S3 bucket.
+
+    Attributes:
+        bucket (str): The name of the S3 bucket.
+        access_key (str): The access key for the S3 bucket.
+        secret_key (str): The secret key for the S3 bucket.
+        service_uri (str): The service URI for the S3 bucket
+    """
+
+    bucket: str
+    access_key: str
+    secret_key: str
+    service_uri: str
