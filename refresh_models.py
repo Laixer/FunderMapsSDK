@@ -19,8 +19,6 @@ async def run(config):
 
     fundermaps = FunderMapsSDK(db_config=db_config)
 
-    logger.info("Starting BAG loading process")
-
     with fundermaps.db as db:
         # TODO: Check if enough data has changed to refresh models
 
@@ -46,8 +44,6 @@ async def run(config):
         db.refresh_materialized_view("data.statistics_postal_code_foundation_type")
         db.refresh_materialized_view("data.statistics_postal_code_foundation_risk")
 
-    logger.info("Finished")
-
 
 def main():
     import colorlog
@@ -68,7 +64,9 @@ def main():
     config.read("config.ini")
 
     try:
+        logger.info("Starting 'refresh_models'")
         asyncio.run(run(config))
+        logger.info("Finished 'refresh_models'")
     except Exception as e:
         logger.error("An error occurred", exc_info=e)
         sys.exit(1)
