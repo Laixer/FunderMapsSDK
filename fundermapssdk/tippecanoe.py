@@ -1,8 +1,7 @@
-import os
 import asyncio
 
 
-async def generate(
+async def tippecanoe(
     input: str,
     output: str,
     layer: str | None = None,
