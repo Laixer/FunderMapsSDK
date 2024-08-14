@@ -1,6 +1,7 @@
 import logging
 
 from fundermapssdk.db import DbProvider
+from fundermapssdk.gdal import GDALProvider
 from fundermapssdk.mail import MailProvider
 from fundermapssdk.config import DatabaseConfig, MailConfig
 
@@ -66,6 +67,16 @@ class FunderMapsSDK:
 
         return self._service_providers["db"]
 
+    def _gdal_provider(self):
+        if self.db_config is None:
+            raise ValueError("Database configuration is not set")
+
+        if "gdal" not in self._service_providers:
+            self._service_providers["gdal"] = GDALProvider(self, self.db_config)
+            self._logger.debug("GDAL provider initialized")
+
+        return self._service_providers["gdal"]
+
     @property
     def mail(self):
         return self._mail_provider()
@@ -73,3 +84,7 @@ class FunderMapsSDK:
     @property
     def db(self):
         return self._db_provider()
+
+    @property
+    def gdal(self):
+        return self._gdal_provider()
