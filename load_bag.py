@@ -4,10 +4,9 @@ import logging
 import asyncio
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.mail import Email
 from fundermapssdk.util import http_download_file
-from fundermapssdk.config import MailConfig, DatabaseConfig
-from fundermapssdk.gdal import convert
+from fundermapssdk.config import DatabaseConfig
+
 
 BASE_URL_BAG: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
 
