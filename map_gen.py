@@ -64,6 +64,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
         # logger.info(f"Storing tileset '{tileset}'")
         # await s3.upload_file(f"{tileset}.gpkg", f"tileset/{tileset}.gpkg")
 
+        logger.info(f"Uploading tileset '{tileset.tileset}' to tileset bucket")
         for root, _, files in os.walk(tileset.tileset):
             for filename in files:
                 file_ext = os.path.splitext(filename)[1]
