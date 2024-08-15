@@ -12,13 +12,11 @@ task_registry_post = {}
 
 
 def fundermaps_task(func):
-    """Decorator to register a function."""
     task_registry[func.__name__] = func
     return func
 
 
 def fundermaps_task_post(func):
-    """Decorator to register a function."""
     task_registry_post[func.__name__] = func
     return func
 

@@ -70,11 +70,11 @@ if __name__ == "__main__":
         colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
     )
 
-    logging.basicConfig(
-        level=logging.INFO,
-        handlers=[handler],
-    )
+    # Set up logging to console
+    logging.basicConfig(level=logging.INFO, handlers=[handler])
 
+    # Find and read the configuration file
     config = find_config()
 
+    # Run the application
     App(config, logger).run()

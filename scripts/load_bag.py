@@ -1,12 +1,10 @@
 import os
-import sys
 import logging
-import asyncio
 import colorlog
 
 from fundermapssdk import FunderMapsSDK
+from fundermapssdk.app import App, fundermaps_task, fundermaps_task_post
 from fundermapssdk.util import find_config, http_download_file
-from fundermapssdk.config import DatabaseConfig
 
 
 BASE_URL_BAG: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
@@ -28,17 +26,8 @@ async def clean_db(fundermaps: FunderMapsSDK):
         db.drop_table("public.nummeraanduiding")
 
 
-async def run(config):
-    db_config = DatabaseConfig(
-        database=config.get("database", "database"),
-        host=config.get("database", "host"),
-        user=config.get("database", "username"),
-        password=config.get("database", "password"),
-        port=config.getint("database", "port"),
-    )
-
-    fundermaps = FunderMapsSDK(db_config=db_config)
-
+@fundermaps_task
+async def run(fundermaps: FunderMapsSDK):
     logger.info("Downloading BAG file")
     await http_download_file(BASE_URL_BAG, FILE_NAME)
 
@@ -70,6 +59,9 @@ async def run(config):
         db.execute_script("load_residence")
         db.reindex_table("geocoder.residence")
 
+
+@fundermaps_task_post
+async def run_post(fundermaps: FunderMapsSDK):
     logger.info("Cleaning database")
     await clean_db(fundermaps)
 
@@ -80,17 +72,11 @@ if __name__ == "__main__":
         colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
     )
 
-    logging.basicConfig(
-        level=logging.INFO,
-        handlers=[handler],
-    )
+    # Set up logging to console
+    logging.basicConfig(level=logging.INFO, handlers=[handler])
 
+    # Find and read the configuration file
     config = find_config()
 
-    try:
-        logger.info("Starting 'loadbag'")
-        asyncio.run(run(config))
-        logger.info("Finished 'loadbag'")
-    except Exception as e:
-        logger.error("An error occurred", exc_info=e)
-        sys.exit(1)
+    # Run the application
+    App(config, logger).run()
