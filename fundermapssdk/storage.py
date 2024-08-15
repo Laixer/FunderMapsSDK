@@ -11,6 +11,20 @@ class ObjectStorageProvider:
         self.client = None
 
     async def upload_file(self, file_path: str, key: str, *args):
+        """
+        Uploads a file to the specified key in the storage bucket.
+
+        Args:
+            file_path (str): The path of the file to be uploaded.
+            key (str): The key under which to store the file in the bucket.
+            *args: Additional arguments to be passed to the upload_file method.
+
+        Returns:
+            None
+
+        Raises:
+            None
+        """
         self.__logger(logging.DEBUG, f"Uploading file {file_path} to {key}")
 
         self.client.upload_file(file_path, self.config.bucket, key, *args)
@@ -18,7 +32,7 @@ class ObjectStorageProvider:
         self.__logger(logging.DEBUG, f"File uploaded to {key}")
 
     def __enter__(self):
-        # self.__logger(logging.DEBUG, "Connecting to database")
+        self.__logger(logging.DEBUG, "Connecting to S3")
 
         session = boto3.session.Session()
         self.client = session.client(
@@ -28,14 +42,11 @@ class ObjectStorageProvider:
             aws_secret_access_key=self.config.secret_key,
         )
 
-        # self.__logger(logging.DEBUG, "Connected to database")
+        self.__logger(logging.DEBUG, "Connected to S3")
 
         return self
 
     def __exit__(self, type, value, traceback):
-        # self.__logger(logging.DEBUG, "Closing database connection")
-
-        # self.db.close()
         pass
 
     def __logger(self, level, message):
