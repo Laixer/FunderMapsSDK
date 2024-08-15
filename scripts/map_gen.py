@@ -7,10 +7,25 @@ import colorlog
 from fundermapssdk import FunderMapsSDK
 from fundermapssdk.config import DatabaseConfig, S3Config
 from fundermapssdk.tippecanoe import tippecanoe
-from fundermapssdk.util import find_config
+from fundermapssdk.util import find_config, remove_files
 
 
 logger = logging.getLogger("map_gen")
+
+task_registry = {}
+task_registry_post = {}
+
+
+def fundermaps_task(func):
+    """Decorator to register a function."""
+    task_registry[func.__name__] = func
+    return func
+
+
+def fundermaps_task_post(func):
+    """Decorator to register a function."""
+    task_registry_post[func.__name__] = func
+    return func
 
 
 class TileBundle:
@@ -25,18 +40,18 @@ class TileBundle:
 
 
 async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
-    # logger.info(f"Dowloading tileset '{tileset.tileset}'")
-    # await fundermaps.gdal.convert(
-    #     "PG:dbname=fundermaps",
-    #     f"{tileset.tileset}.gpkg",
-    #     f"maplayer.{tileset.tileset}",
-    # )
+    logger.info(f"Dowloading tileset '{tileset.tileset}'")
+    await fundermaps.gdal.convert(
+        "PG:dbname=fundermaps",
+        f"{tileset.tileset}.gpkg",
+        f"maplayer.{tileset.tileset}",
+    )
 
-    # logger.info(f"Converting tileset '{tileset.tileset}' to GeoJSON")
-    # await fundermaps.gdal.convert(
-    #     f"{tileset.tileset}.gpkg",
-    #     f"{tileset.tileset}.geojson",
-    # )
+    logger.info(f"Converting tileset '{tileset.tileset}' to GeoJSON")
+    await fundermaps.gdal.convert(
+        f"{tileset.tileset}.gpkg",
+        f"{tileset.tileset}.geojson",
+    )
 
     logger.info(f"Generating tileset '{tileset.tileset}'")
     # await tippecanoe(f"{tileset}.geojson", f"{tileset}.mbtiles", tileset, 16, 12)
@@ -48,7 +63,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
         tileset.min_zoom,
     )
 
-    # TODO: Upload to Mapbox
+    # TODO: This is where we would upload the tileset to Mapbox
 
     with fundermaps.s3 as s3:
         # from datetime import datetime
@@ -90,41 +105,32 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
                 )
 
 
-async def run(config):
-    db_config = DatabaseConfig(
-        database=config.get("database", "database"),
-        host=config.get("database", "host"),
-        user=config.get("database", "username"),
-        password=config.get("database", "password"),
-        port=config.getint("database", "port"),
-    )
-    s3_config = S3Config(
-        access_key=config.get("s3", "access_key"),
-        secret_key=config.get("s3", "secret_key"),
-        service_uri=config.get("s3", "service_uri"),
-        bucket=config.get("s3", "bucket"),
-    )
-
-    fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
-
+@fundermaps_task
+async def run(fundermaps: FunderMapsSDK):
     tile_bundles = [
         # TileBundle("Analysis Foundation", "analysis_foundation", 12, 16),
         # TileBundle("Analysis Report", "analysis_report", 12, 16),
-        TileBundle("Analysis Building", "analysis_building", 12, 16),
+        # TileBundle("Analysis Building", "analysis_building", 12, 16),
         # TileBundle("Analysis Risk", "analysis_risk", 12, 16),
         # TileBundle("Analysis Monitoring", "analysis_monitoring", 12, 16),
         #
-        # TileBundle("Facade Scan", "facade_scan", 12, 16),
+        TileBundle("Facade Scan", "facade_scan", 12, 16),
         #
-        # TileBundle("Incidents", "incident", 10, 15),
-        # TileBundle("Incidents per neighborhood", "incident_neighborhood", 10, 16),
-        # TileBundle("Incidents per municipality", "incident_municipality", 7, 11),
-        # TileBundle("Incidents per district", "incident_district", 10, 16),
+        TileBundle("Incidents", "incident", 10, 15),
+        TileBundle("Incidents per neighborhood", "incident_neighborhood", 10, 16),
+        TileBundle("Incidents per municipality", "incident_municipality", 7, 11),
+        TileBundle("Incidents per district", "incident_district", 10, 16),
     ]
 
     for tileset in tile_bundles:
         logger.info(f"Processing tileset '{tileset.name}'")
         await process_tileset(fundermaps, tileset)
+
+
+@fundermaps_task_post
+async def run_post(fundermaps: FunderMapsSDK):
+    remove_files(".", extension=".gpkg")
+    remove_files(".", extension=".geojson")
 
 
 if __name__ == "__main__":
@@ -141,9 +147,35 @@ if __name__ == "__main__":
     config = find_config()
 
     try:
-        logger.info("Starting 'loadbag'")
-        asyncio.run(run(config))
-        logger.info("Finished 'loadbag'")
+        db_config = DatabaseConfig(
+            database=config.get("database", "database"),
+            host=config.get("database", "host"),
+            user=config.get("database", "username"),
+            password=config.get("database", "password"),
+            port=config.getint("database", "port"),
+        )
+        s3_config = S3Config(
+            access_key=config.get("s3", "access_key"),
+            secret_key=config.get("s3", "secret_key"),
+            service_uri=config.get("s3", "service_uri"),
+            bucket=config.get("s3", "bucket"),
+        )
+        fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
+
+        async def run_tasks():
+            try:
+                for task_name, task_func in task_registry.items():
+                    logger.debug(f"Running task '{task_name}'")
+                    await task_func(fundermaps)
+            finally:
+                for task_name, task_func in task_registry_post.items():
+                    logger.debug(f"Running post task '{task_name}'")
+                    await task_func(fundermaps)
+
+        logger.info("Starting 'map_gen'")
+        asyncio.run(run_tasks())
+        logger.info("Finished 'map_gen'")
+
     except Exception as e:
         logger.error("An error occurred", exc_info=e)
         sys.exit(1)
