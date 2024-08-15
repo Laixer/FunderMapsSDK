@@ -6,6 +6,18 @@ from configparser import ConfigParser
 
 
 async def http_download_file(url, dest_path):
+    """
+    Downloads a file from the given URL and saves it to the specified destination path.
+
+    Args:
+        url (str): The URL of the file to download.
+        dest_path (str): The destination path where the downloaded file will be saved.
+
+    Raises:
+        httpx.HTTPError: If there is an error during the HTTP request.
+
+    """
+
     if os.path.exists(dest_path):
         os.remove(dest_path)
 
@@ -18,6 +30,14 @@ async def http_download_file(url, dest_path):
 
 
 def remove_files(directory, extension=".gpkg"):
+    """
+    Remove files with a specific extension from a directory.
+
+    Args:
+        directory (str): The directory to search for files.
+        extension (str): The extension of the files to remove.
+    """
+
     files = glob.glob(os.path.join(directory, f"*{extension}"))
 
     for file_path in files:

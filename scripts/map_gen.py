@@ -25,18 +25,18 @@ class TileBundle:
 
 
 async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
-    logger.info(f"Dowloading tileset '{tileset.tileset}'")
-    await fundermaps.gdal.convert(
-        "PG:dbname=fundermaps",
-        f"{tileset.tileset}.gpkg",
-        f"maplayer.{tileset.tileset}",
-    )
+    # logger.info(f"Dowloading tileset '{tileset.tileset}'")
+    # await fundermaps.gdal.convert(
+    #     "PG:dbname=fundermaps",
+    #     f"{tileset.tileset}.gpkg",
+    #     f"maplayer.{tileset.tileset}",
+    # )
 
-    logger.info(f"Converting tileset '{tileset.tileset}' to GeoJSON")
-    await fundermaps.gdal.convert(
-        f"{tileset.tileset}.gpkg",
-        f"{tileset.tileset}.geojson",
-    )
+    # logger.info(f"Converting tileset '{tileset.tileset}' to GeoJSON")
+    # await fundermaps.gdal.convert(
+    #     f"{tileset.tileset}.gpkg",
+    #     f"{tileset.tileset}.geojson",
+    # )
 
     logger.info(f"Generating tileset '{tileset.tileset}'")
     # await tippecanoe(f"{tileset}.geojson", f"{tileset}.mbtiles", tileset, 16, 12)
@@ -110,9 +110,9 @@ async def run(config):
     tile_bundles = [
         # TileBundle("Analysis Foundation", "analysis_foundation", 12, 16),
         # TileBundle("Analysis Report", "analysis_report", 12, 16),
-        # TileBundle("Analysis Building", "analysis_building", 12, 16),
+        TileBundle("Analysis Building", "analysis_building", 12, 16),
         # TileBundle("Analysis Risk", "analysis_risk", 12, 16),
-        TileBundle("Analysis Monitoring", "analysis_monitoring", 12, 16),
+        # TileBundle("Analysis Monitoring", "analysis_monitoring", 12, 16),
         #
         # TileBundle("Facade Scan", "facade_scan", 12, 16),
         #

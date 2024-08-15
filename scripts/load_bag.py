@@ -10,8 +10,22 @@ from fundermapssdk.config import DatabaseConfig
 
 
 BASE_URL_BAG: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
+FILE_NAME: str = "bag-light.gpkg"
+FILE_MIN_SIZE: int = 1024 * 1024 * 1024
 
 logger = logging.getLogger("loadbag")
+
+
+async def clean_db(fundermaps: FunderMapsSDK):
+    with fundermaps.db as db:
+        logger.info("Removing previous data")
+        db.drop_table("public.woonplaats")
+        db.drop_table("public.verblijfsobject")
+        db.drop_table("public.pand")
+        db.drop_table("public.ligplaats")
+        db.drop_table("public.standplaats")
+        db.drop_table("public.openbare_ruimte")
+        db.drop_table("public.nummeraanduiding")
 
 
 async def run(config):
@@ -26,27 +40,20 @@ async def run(config):
     fundermaps = FunderMapsSDK(db_config=db_config)
 
     logger.info("Downloading BAG file")
-    await http_download_file(BASE_URL_BAG, "bag-light.gpkg")
+    await http_download_file(BASE_URL_BAG, FILE_NAME)
 
     logger.info("Checking BAG file")
-    if not os.path.exists("bag-light.gpkg"):
+    if not os.path.exists(FILE_NAME):
         raise FileNotFoundError("BAG file not found")
-    if os.path.getsize("bag-light.gpkg") < 1024 * 1024 * 1024:
+    if os.path.getsize(FILE_NAME) < FILE_MIN_SIZE:
         raise ValueError("BAG file is below 1GB")
 
-    with fundermaps.db as db:
-        logger.info("Removing previous data")
-        db.drop_table("public.woonplaats")
-        db.drop_table("public.verblijfsobject")
-        db.drop_table("public.pand")
-        db.drop_table("public.ligplaats")
-        db.drop_table("public.standplaats")
-        db.drop_table("public.openbare_ruimte")
-        db.drop_table("public.nummeraanduiding")
+    logger.info("Cleaning database")
+    await clean_db(fundermaps)
 
     logger.info("Loading BAG file into database")
     await fundermaps.gdal.convert(
-        "bag-light.gpkg",
+        FILE_NAME,
         "PG:dbname=fundermaps",
     )
 
@@ -63,15 +70,8 @@ async def run(config):
         db.execute_script("load_residence")
         db.reindex_table("geocoder.residence")
 
-    with fundermaps.db as db:
-        logger.info("Cleaning up database")
-        db.drop_table("public.woonplaats")
-        db.drop_table("public.verblijfsobject")
-        db.drop_table("public.pand")
-        db.drop_table("public.ligplaats")
-        db.drop_table("public.standplaats")
-        db.drop_table("public.openbare_ruimte")
-        db.drop_table("public.nummeraanduiding")
+    logger.info("Cleaning database")
+    await clean_db(fundermaps)
 
 
 if __name__ == "__main__":
