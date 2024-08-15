@@ -48,7 +48,7 @@ async def run(config):
         db.refresh_materialized_view("data.statistics_postal_code_foundation_risk")
 
 
-def main():
+if __name__ == "__main__":
     handler = colorlog.StreamHandler()
     handler.setFormatter(
         colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
@@ -68,7 +68,3 @@ def main():
     except Exception as e:
         logger.error("An error occurred", exc_info=e)
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
