@@ -2,9 +2,10 @@ import os
 import sys
 import logging
 import asyncio
+import colorlog
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.util import http_download_file
+from fundermapssdk.util import find_config, http_download_file
 from fundermapssdk.config import DatabaseConfig
 
 
@@ -74,11 +75,6 @@ async def run(config):
 
 
 def main():
-    import colorlog
-    from configparser import ConfigParser
-
-    config = ConfigParser()
-
     handler = colorlog.StreamHandler()
     handler.setFormatter(
         colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
@@ -89,7 +85,7 @@ def main():
         handlers=[handler],
     )
 
-    config.read("config.ini")
+    config = find_config()
 
     try:
         logger.info("Starting 'loadbag'")

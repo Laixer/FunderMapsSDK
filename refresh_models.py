@@ -1,9 +1,12 @@
 import sys
 import asyncio
 import logging
+import colorlog
 
 from fundermapssdk import FunderMapsSDK
 from fundermapssdk.config import DatabaseConfig
+from fundermapssdk.util import find_config
+
 
 logger = logging.getLogger("refresh_models")
 
@@ -45,33 +48,7 @@ async def run(config):
         db.refresh_materialized_view("data.statistics_postal_code_foundation_risk")
 
 
-def load_config():
-    config = ConfigParser()
-
-    # Define the paths to check
-    config_paths = [
-        '/etc/fundermaps/config.ini',  # First, check this path
-        './config.ini'                 # Then, check the current directory
-    ]
-
-    # Attempt to read the configuration file from the defined paths
-    for path in config_paths:
-        if os.path.exists(path):
-            config.read(path)
-            print(f"Configuration loaded from {path}")
-            break
-    else:
-        raise FileNotFoundError("No configuration file found in the specified paths.")
-
-    return config
-
-
 def main():
-    import colorlog
-    from configparser import ConfigParser
-
-    config = ConfigParser()
-
     handler = colorlog.StreamHandler()
     handler.setFormatter(
         colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
@@ -82,7 +59,7 @@ def main():
         handlers=[handler],
     )
 
-    config.read("config.ini")
+    config = find_config()
 
     try:
         logger.info("Starting 'refresh_models'")
