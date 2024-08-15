@@ -1,0 +1,64 @@
+import sys
+import logging
+import asyncio
+from configparser import ConfigParser
+
+from fundermapssdk import FunderMapsSDK
+from fundermapssdk.config import DatabaseConfig, S3Config
+
+
+task_registry = {}
+task_registry_post = {}
+
+
+def fundermaps_task(func):
+    """Decorator to register a function."""
+    task_registry[func.__name__] = func
+    return func
+
+
+def fundermaps_task_post(func):
+    """Decorator to register a function."""
+    task_registry_post[func.__name__] = func
+    return func
+
+
+class App:
+    def __init__(self, config: ConfigParser, logger: logging.Logger):
+        self.config = config
+        self.logger = logger
+
+    async def _run_tasks(self, fundermaps: FunderMapsSDK):
+        try:
+            for task_name, task_func in task_registry.items():
+                self.logger.debug(f"Running task '{task_name}'")
+                await task_func(fundermaps)
+        finally:
+            for task_name, task_func in task_registry_post.items():
+                self.logger.debug(f"Running post task '{task_name}'")
+                await task_func(fundermaps)
+
+    def run(self):
+        try:
+            db_config = DatabaseConfig(
+                database=self.config.get("database", "database"),
+                host=self.config.get("database", "host"),
+                user=self.config.get("database", "username"),
+                password=self.config.get("database", "password"),
+                port=self.config.getint("database", "port"),
+            )
+            s3_config = S3Config(
+                access_key=self.config.get("s3", "access_key"),
+                secret_key=self.config.get("s3", "secret_key"),
+                service_uri=self.config.get("s3", "service_uri"),
+                bucket=self.config.get("s3", "bucket"),
+            )
+            fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
+
+            self.logger.info("Starting application")
+            asyncio.run(self._run_tasks(fundermaps))
+            self.logger.info("Application finished")
+
+        except Exception as e:
+            self.logger.error("An error occurred", exc_info=e)
+            sys.exit(1)
