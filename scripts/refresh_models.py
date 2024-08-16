@@ -1,5 +1,4 @@
 import logging
-import colorlog
 
 from fundermapssdk import FunderMapsSDK
 from fundermapssdk.app import App, fundermaps_task
@@ -38,19 +37,3 @@ async def run_refresh_statistics(fundermaps: FunderMapsSDK):
         db.refresh_materialized_view("data.statistics_product_buildings_restored")
         db.refresh_materialized_view("data.statistics_postal_code_foundation_type")
         db.refresh_materialized_view("data.statistics_postal_code_foundation_risk")
-
-
-if __name__ == "__main__":
-    handler = colorlog.StreamHandler()
-    handler.setFormatter(
-        colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
-    )
-
-    # Set up logging to console
-    logging.basicConfig(level=logging.INFO, handlers=[handler])
-
-    # Find and read the configuration file
-    config = find_config()
-
-    # Run the application
-    App(config, logger).run()

@@ -6,13 +6,13 @@ from fundermapssdk import FunderMapsSDK
 from fundermapssdk.app import fundermaps_task
 
 
+BUCKET: str = "fundermaps"
 ORGANIZATION: list[str] = [
     "5c2c5822-6996-4306-96ba-6635ea7f90e2",
     "8a56e920-7811-47b7-9289-758c8fe346db",
     "c06a1fc6-6452-4b88-85fd-ba50016c578f",
     "58872000-cb69-433a-91ba-165a9d0b4710",
 ]
-BUCKET: str = "fundermaps"
 
 logger = logging.getLogger("product_export")
 

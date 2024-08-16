@@ -49,7 +49,7 @@ else:
 logging.basicConfig(
     level=args.log_level,
     handlers=[handler],
-    format="%(asctime)s - %(message)s",
+    format="%(message)s",
 )
 
 # Find and read the configuration file
