@@ -1,4 +1,6 @@
 import csv
+import gzip
+import shutil
 import logging
 from datetime import datetime
 
@@ -53,6 +55,9 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
                     writer.writerow(row)
                     data_written = True
 
+    with open(csv_file, "rb") as f_in, gzip.open(f"{csv_file}.gz", "wb") as f_out:
+        shutil.copyfileobj(f_in, f_out)
+
     if data_written:
         with fundermaps.s3 as s3:
             current_date = datetime.now()
@@ -62,8 +67,8 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
             logger.info(f"Uploading {csv_file} to S3")
             await s3.upload_file(
                 BUCKET,
-                csv_file,
-                f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv",
+                f"{csv_file}.gz",
+                f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv.gz",
             )
     else:
         logger.info("No data to export")
