@@ -1,10 +1,8 @@
 import os
 import logging
-import colorlog
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.app import App, fundermaps_task, fundermaps_task_post
-from fundermapssdk.util import find_config, http_download_file, remove_files
+from fundermapssdk import util, app
 
 
 BASE_URL_CBS: str = (
@@ -24,10 +22,10 @@ async def clean_db(fundermaps: FunderMapsSDK):
         db.drop_table("public.gemeenten")
 
 
-@fundermaps_task
+@app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK):
     logger.info("Downloading CBS file")
-    await http_download_file(BASE_URL_CBS, FILE_NAME)
+    await util.http_download_file(BASE_URL_CBS, FILE_NAME)
 
     logger.info("Checking CBS file")
     if not os.path.exists(FILE_NAME):
@@ -56,25 +54,3 @@ async def run(fundermaps: FunderMapsSDK):
     #     logger.info("Loading residences into geocoder")
     #     db.execute_script("load_residence")
     #     db.reindex_table("geocoder.residence")
-
-
-@fundermaps_task_post
-async def run_post(fundermaps: FunderMapsSDK):
-    # await clean_db(fundermaps)
-    remove_files(".", extension=".gpkg")
-
-
-if __name__ == "__main__":
-    handler = colorlog.StreamHandler()
-    handler.setFormatter(
-        colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
-    )
-
-    # Set up logging to console
-    logging.basicConfig(level=logging.INFO, handlers=[handler])
-
-    # Find and read the configuration file
-    config = find_config()
-
-    # Run the application
-    App(config, logger).run()

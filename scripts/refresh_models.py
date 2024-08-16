@@ -1,8 +1,7 @@
 import logging
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.app import App, fundermaps_task
-from fundermapssdk.util import find_config
+from fundermapssdk.app import fundermaps_task
 
 logger = logging.getLogger("refresh_models")
 
