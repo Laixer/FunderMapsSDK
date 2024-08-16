@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from configparser import ConfigParser
 import os
 import sys
