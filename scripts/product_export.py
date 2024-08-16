@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.app import fundermaps_task
+from fundermapssdk import app
 
 
 BUCKET: str = "fundermaps"
@@ -68,7 +68,7 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
         logger.info("No data to export")
 
 
-@fundermaps_task
+@app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK):
     for organization in ORGANIZATION:
         await process_export(fundermaps, organization)

@@ -1,12 +1,12 @@
 import logging
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.app import fundermaps_task
+from fundermapssdk import app
 
 logger = logging.getLogger("refresh_models")
 
 
-@fundermaps_task
+@app.fundermaps_task
 async def run_refresh_models(fundermaps: FunderMapsSDK):
     with fundermaps.db as db:
         # TODO: Check if enough data has changed to refresh models
@@ -21,7 +21,7 @@ async def run_refresh_models(fundermaps: FunderMapsSDK):
         db.reindex_table("data.model_risk_static")
 
 
-@fundermaps_task
+@app.fundermaps_task
 async def run_refresh_statistics(fundermaps: FunderMapsSDK):
     with fundermaps.db as db:
         logger.info("Refreshing statistics")

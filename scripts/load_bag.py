@@ -2,8 +2,7 @@ import os
 import logging
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.app import fundermaps_task
-from fundermapssdk.util import http_download_file
+from fundermapssdk import util, app
 
 
 BASE_URL_BAG: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
@@ -24,10 +23,10 @@ async def clean_db(fundermaps: FunderMapsSDK):
         db.drop_table("public.nummeraanduiding")
 
 
-@fundermaps_task
+@app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK):
     logger.info("Downloading BAG file")
-    await http_download_file(BASE_URL_BAG, FILE_NAME)
+    await util.http_download_file(BASE_URL_BAG, FILE_NAME)
 
     logger.info("Checking BAG file")
     if not os.path.exists(FILE_NAME):
