@@ -1,3 +1,4 @@
+import os
 import logging
 
 from fundermapssdk.db import DbProvider
@@ -50,6 +51,8 @@ class FunderMapsSDK:
 
         self._service_providers = {}
         self._logger = logger
+
+        self.sdk_directory = os.path.dirname(os.path.realpath(__file__))
 
     def _mail_provider(self):
         if self.mail_config is None:

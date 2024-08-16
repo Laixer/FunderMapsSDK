@@ -1,3 +1,4 @@
+import os
 import logging
 import psycopg2
 
@@ -9,6 +10,8 @@ class DbProvider:
         self._sdk = sdk
         self.config = config
         self.db = None
+
+        self.sql_directory = os.path.join(self._sdk.sdk_directory, "sql")
 
     def reindex_table(self, table: str):
         """
@@ -55,10 +58,12 @@ class DbProvider:
         Execute the specified SQL script.
         """
 
-        sql_file_path = f"fundermapssdk/sql/{script}.sql"
+        sql_file_path = f"{script}.sql"
         self.__logger(logging.DEBUG, f"Running SQL script: {sql_file_path}")
 
-        with open(sql_file_path, "r") as sql_file:
+        file_path = os.path.join(self.sql_directory, sql_file_path)
+
+        with open(file_path, "r") as sql_file:
             sql_script = sql_file.read()
 
             with self.db.cursor() as cur:
