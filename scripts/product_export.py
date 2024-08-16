@@ -1,18 +1,21 @@
 import csv
 import logging
+from datetime import datetime
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.app import App, fundermaps_task, fundermaps_task_post
-from fundermapssdk.util import find_config, http_download_file
+from fundermapssdk.app import fundermaps_task
 
 
-ORGANIZATION: str = "5c2c5822-6996-4306-96ba-6635ea7f90e2"
+ORGANIZATION: list[str] = [
+    "5c2c5822-6996-4306-96ba-6635ea7f90e2",
+    "8a56e920-7811-47b7-9289-758c8fe346db",
+]
+BUCKET: str = "fundermaps"
 
 logger = logging.getLogger("product_export")
 
 
-@fundermaps_task
-async def run(fundermaps: FunderMapsSDK):
+async def process_export(fundermaps: FunderMapsSDK, organization: str):
     logger.info("Exporting product tracker data")
     with fundermaps.db as db:
         with db.db.cursor() as cur:
@@ -30,9 +33,9 @@ async def run(fundermaps: FunderMapsSDK):
                 AND     pt.create_date >= date_trunc('month', CURRENT_DATE) - interval '1 month'
                 AND     pt.create_date < date_trunc('month', CURRENT_DATE)"""
 
-            cur.execute(query, (ORGANIZATION,))
+            cur.execute(query, (organization,))
 
-            csv_file = f"product_tracker_{ORGANIZATION}.csv"
+            csv_file = f"product_tracker_{organization}.csv"
 
             logger.info(f"Writing data to {csv_file}")
             with open(csv_file, mode="w", newline="") as file:
@@ -40,3 +43,21 @@ async def run(fundermaps: FunderMapsSDK):
 
                 writer.writerow([desc[0] for desc in cur.description])
                 writer.writerows(cur)
+
+    with fundermaps.s3 as s3:
+        current_date = datetime.now()
+        formatted_date_year = current_date.strftime("%Y")
+        formatted_date_month = current_date.strftime("%b").lower()
+
+        logger.info(f"Uploading {csv_file} to S3")
+        await s3.upload_file(
+            BUCKET,
+            csv_file,
+            f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv",
+        )
+
+
+@fundermaps_task
+async def run(fundermaps: FunderMapsSDK):
+    for organization in ORGANIZATION:
+        await process_export(fundermaps, organization)

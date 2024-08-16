@@ -10,7 +10,7 @@ class ObjectStorageProvider:
         self.config = config
         self.client = None
 
-    async def upload_file(self, file_path: str, key: str, *args):
+    async def upload_file(self, bucket, file_path: str, key: str, *args):
         """
         Uploads a file to the specified key in the storage bucket.
 
@@ -27,7 +27,7 @@ class ObjectStorageProvider:
         """
         self.__logger(logging.DEBUG, f"Uploading file {file_path} to {key}")
 
-        self.client.upload_file(file_path, self.config.bucket, key, *args)
+        self.client.upload_file(file_path, bucket, key, *args)
 
         self.__logger(logging.DEBUG, f"File uploaded to {key}")
 
