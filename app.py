@@ -5,6 +5,7 @@ import logging
 import colorlog
 import argparse
 import importlib.util
+from systemd import journal
 
 import fundermapssdk.util
 from fundermapssdk.app import App
@@ -29,22 +30,25 @@ parser = argparse.ArgumentParser(description="FunderMaps SDK Script Runner")
 
 parser.add_argument("-c", "--config", help="path to the configuration file")
 parser.add_argument("-l", "--log-level", help="log level", default="INFO")
+parser.add_argument("--systemd", help="log to systemd", action="store_true")
 parser.add_argument("script", help="path to the script to run")
 
 args = parser.parse_args()
 
-handler = colorlog.StreamHandler()
-handler.setFormatter(
-    colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
-)
+if args.systemd:
+    handler = journal.JournalHandler(SYSLOG_IDENTIFIER=args.script)
+else:
+    handler = colorlog.StreamHandler()
+    handler.setFormatter(
+        colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
+    )
 
 # Set up logging to console
 logging.basicConfig(
-    level=args.log_level, handlers=[handler], format="%(asctime)s - %(message)s"
+    level=args.log_level,
+    handlers=[handler],
+    format="%(asctime)s - %(message)s",
 )
-
-logger.debug("DBG Starting script")
-logger.info("Starting script")
 
 # Find and read the configuration file
 if args.config:

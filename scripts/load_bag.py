@@ -16,7 +16,6 @@ logger = logging.getLogger("loadbag")
 
 async def clean_db(fundermaps: FunderMapsSDK):
     with fundermaps.db as db:
-        logger.info("Removing previous data")
         db.drop_table("public.woonplaats")
         db.drop_table("public.verblijfsobject")
         db.drop_table("public.pand")

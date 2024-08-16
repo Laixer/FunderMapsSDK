@@ -45,14 +45,14 @@ class FunderMapsSDK:
         db_config: DatabaseConfig | None = None,
         s3_config: S3Config | None = None,
     ):
+        self.sdk_directory = os.path.dirname(os.path.realpath(__file__))
+
         self.mail_config = mail_config
         self.db_config = db_config
         self.s3_config = s3_config
 
         self._service_providers = {}
         self._logger = logger
-
-        self.sdk_directory = os.path.dirname(os.path.realpath(__file__))
 
     def _mail_provider(self):
         if self.mail_config is None:
