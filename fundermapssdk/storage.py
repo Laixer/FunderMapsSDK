@@ -15,6 +15,7 @@ class ObjectStorageProvider:
         Uploads a file to the specified key in the storage bucket.
 
         Args:
+            bucket (str): The name of the bucket to upload the file to.
             file_path (str): The path of the file to be uploaded.
             key (str): The key under which to store the file in the bucket.
             *args: Additional arguments to be passed to the upload_file method.

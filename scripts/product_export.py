@@ -9,6 +9,8 @@ from fundermapssdk.app import fundermaps_task
 ORGANIZATION: list[str] = [
     "5c2c5822-6996-4306-96ba-6635ea7f90e2",
     "8a56e920-7811-47b7-9289-758c8fe346db",
+    "c06a1fc6-6452-4b88-85fd-ba50016c578f",
+    "58872000-cb69-433a-91ba-165a9d0b4710",
 ]
 BUCKET: str = "fundermaps"
 
@@ -35,26 +37,35 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
 
             cur.execute(query, (organization,))
 
-            csv_file = f"product_tracker_{organization}.csv"
+            csv_file = f"{organization}.csv"
+
+            column_names = [desc[0] for desc in cur.description]
 
             logger.info(f"Writing data to {csv_file}")
             with open(csv_file, mode="w", newline="") as file:
                 writer = csv.writer(file)
 
-                writer.writerow([desc[0] for desc in cur.description])
-                writer.writerows(cur)
+                writer.writerow(column_names)
 
-    with fundermaps.s3 as s3:
-        current_date = datetime.now()
-        formatted_date_year = current_date.strftime("%Y")
-        formatted_date_month = current_date.strftime("%b").lower()
+                data_written = False
+                for row in cur:
+                    writer.writerow(row)
+                    data_written = True
 
-        logger.info(f"Uploading {csv_file} to S3")
-        await s3.upload_file(
-            BUCKET,
-            csv_file,
-            f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv",
-        )
+    if data_written:
+        with fundermaps.s3 as s3:
+            current_date = datetime.now()
+            formatted_date_year = current_date.strftime("%Y")
+            formatted_date_month = current_date.strftime("%b").lower()
+
+            logger.info(f"Uploading {csv_file} to S3")
+            await s3.upload_file(
+                BUCKET,
+                csv_file,
+                f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv",
+            )
+    else:
+        logger.info("No data to export")
 
 
 @fundermaps_task
