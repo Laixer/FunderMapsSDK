@@ -7,11 +7,12 @@ from fundermapssdk import app
 
 
 BUCKET: str = "fundermaps"
-ORGANIZATION: list[str] = [
+ORGANIZATIONS: list[str] = [
     "5c2c5822-6996-4306-96ba-6635ea7f90e2",
     "8a56e920-7811-47b7-9289-758c8fe346db",
     "c06a1fc6-6452-4b88-85fd-ba50016c578f",
     "58872000-cb69-433a-91ba-165a9d0b4710",
+    "0ca4d02d-8206-4453-ba45-84f532c868f3",
 ]
 
 logger = logging.getLogger("product_export")
@@ -70,5 +71,5 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
 
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK):
-    for organization in ORGANIZATION:
+    for organization in ORGANIZATIONS:
         await process_export(fundermaps, organization)

@@ -7,11 +7,6 @@ from fundermapssdk.tippecanoe import tippecanoe
 from fundermapssdk import util, app
 
 
-BUCKET: str = "tileset-test"
-
-logger = logging.getLogger("map_gen")
-
-
 class TileBundle:
     def __init__(self, name: str, tileset: str, min_zoom: int, max_zoom: int):
         self.name = name
@@ -21,6 +16,25 @@ class TileBundle:
 
     def __str__(self):
         return f"{self.name} ({self.tileset})"
+
+
+BUCKET: str = "tileset-test"
+BUNDLES: list[TileBundle] = [
+    # TileBundle("Analysis Foundation", "analysis_foundation", 12, 16),
+    # TileBundle("Analysis Report", "analysis_report", 12, 16),
+    # TileBundle("Analysis Building", "analysis_building", 12, 16),
+    # TileBundle("Analysis Risk", "analysis_risk", 12, 16),
+    # TileBundle("Analysis Monitoring", "analysis_monitoring", 12, 16),
+    #
+    TileBundle("Facade Scan", "facade_scan", 12, 16),
+    #
+    TileBundle("Incidents", "incident", 10, 15),
+    # TileBundle("Incidents per neighborhood", "incident_neighborhood", 10, 16),
+    TileBundle("Incidents per municipality", "incident_municipality", 7, 11),
+    # TileBundle("Incidents per district", "incident_district", 10, 16),
+]
+
+logger = logging.getLogger("map_gen")
 
 
 async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
@@ -96,22 +110,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
 
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK):
-    tile_bundles = [
-        # TileBundle("Analysis Foundation", "analysis_foundation", 12, 16),
-        # TileBundle("Analysis Report", "analysis_report", 12, 16),
-        # TileBundle("Analysis Building", "analysis_building", 12, 16),
-        # TileBundle("Analysis Risk", "analysis_risk", 12, 16),
-        # TileBundle("Analysis Monitoring", "analysis_monitoring", 12, 16),
-        #
-        TileBundle("Facade Scan", "facade_scan", 12, 16),
-        #
-        TileBundle("Incidents", "incident", 10, 15),
-        TileBundle("Incidents per neighborhood", "incident_neighborhood", 10, 16),
-        TileBundle("Incidents per municipality", "incident_municipality", 7, 11),
-        TileBundle("Incidents per district", "incident_district", 10, 16),
-    ]
-
-    for tileset in tile_bundles:
+    for tileset in BUNDLES:
         logger.info(f"Processing tileset '{tileset.name}'")
         await process_tileset(fundermaps, tileset)
 
