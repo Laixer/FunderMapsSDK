@@ -1,10 +1,13 @@
 import os
 import logging
+from concurrent.futures import ThreadPoolExecutor
 
 from fundermapssdk import FunderMapsSDK
 from fundermapssdk.tippecanoe import tippecanoe
 from fundermapssdk import util, app
 
+
+BUCKET: str = "tileset-test"
 
 logger = logging.getLogger("map_gen")
 
@@ -60,6 +63,8 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
         # logger.info(f"Storing tileset '{tileset}'")
         # await s3.upload_file(f"{tileset}.gpkg", f"tileset/{tileset}.gpkg")
 
+        tile_files = []
+
         logger.info(f"Uploading tileset '{tileset.tileset}' to tileset bucket")
         for root, _, files in os.walk(tileset.tileset):
             for filename in files:
@@ -68,22 +73,25 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
                     continue
 
                 local_path = os.path.join(root, filename)
+                tile_files.append(local_path)
 
-                s3.client.upload_file(
-                    local_path,
-                    fundermaps.s3_config.bucket,
-                    local_path,
-                    ExtraArgs={
-                        "CacheControl": "max-age=60",
-                        "ContentType": "application/x-protobuf",
-                        "ContentEncoding": "gzip",
-                        "ACL": "public-read",
-                    },
-                )
+        def upload_file(local_path):
+            s3.client.upload_file(
+                local_path,
+                BUCKET,
+                local_path,
+                ExtraArgs={
+                    "CacheControl": "max-age=60",
+                    "ContentType": "application/x-protobuf",
+                    "ContentEncoding": "gzip",
+                    "ACL": "public-read",
+                },
+            )
 
-                logger.debug(
-                    f"Uploaded {local_path} to s3://{fundermaps.s3_config.bucket}/{local_path}"
-                )
+            logger.debug(f"Uploaded {local_path} to s3://{BUCKET}/{local_path}")
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            executor.map(upload_file, tile_files)
 
 
 @app.fundermaps_task
