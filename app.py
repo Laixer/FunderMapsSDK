@@ -42,7 +42,7 @@ if args.systemd:
 else:
     handler = colorlog.StreamHandler()
     handler.setFormatter(
-        colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s : %(message)s")
+        colorlog.ColoredFormatter("%(log_color)s%(levelname)-8s %(name)s%(reset)s : %(message)s")
     )
 
 # Set up logging to console
