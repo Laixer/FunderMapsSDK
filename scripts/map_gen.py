@@ -54,7 +54,6 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
     )
 
     logger.info(f"Generating tileset '{tileset.tileset}'")
-    # await tippecanoe(f"{tileset}.geojson", f"{tileset}.mbtiles", tileset, 16, 12)
     await tippecanoe(
         f"{tileset.tileset}.geojson",
         tileset.tileset,
@@ -63,22 +62,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
         tileset.min_zoom,
     )
 
-    # TODO: This is where we would upload the tileset to Mapbox
-
     with fundermaps.s3 as s3:
-        # from datetime import datetime
-
-        # current_date = datetime.now()
-        # formatted_date = current_date.strftime("%Y-%m-%d")
-
-        # logger.info(f"Archiving tileset '{tileset}'")
-        # await s3.upload_file(
-        #     f"{tileset}.gpkg", f"tileset/archive/{formatted_date}/{tileset}.gpkg"
-        # )
-
-        # logger.info(f"Storing tileset '{tileset}'")
-        # await s3.upload_file(f"{tileset}.gpkg", f"tileset/{tileset}.gpkg")
-
         tile_files = []
 
         logger.info(f"Uploading tileset '{tileset.tileset}' to tileset bucket")
