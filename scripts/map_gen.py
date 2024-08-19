@@ -20,18 +20,16 @@ class TileBundle:
 
 BUCKET: str = "tileset-test"
 BUNDLES: list[TileBundle] = [
-    # TileBundle("Analysis Foundation", "analysis_foundation", 12, 16),
-    # TileBundle("Analysis Report", "analysis_report", 12, 16),
-    # TileBundle("Analysis Building", "analysis_building", 12, 16),
-    # TileBundle("Analysis Risk", "analysis_risk", 12, 16),
-    # TileBundle("Analysis Monitoring", "analysis_monitoring", 12, 16),
-    #
+    TileBundle("Analysis Foundation", "analysis_foundation", 12, 16),
+    TileBundle("Analysis Report", "analysis_report", 12, 16),
+    TileBundle("Analysis Building", "analysis_building", 12, 16),
+    TileBundle("Analysis Risk", "analysis_risk", 12, 16),
+    TileBundle("Analysis Monitoring", "analysis_monitoring", 12, 16),
     TileBundle("Facade Scan", "facade_scan", 12, 16),
-    #
     TileBundle("Incidents", "incident", 10, 15),
-    # TileBundle("Incidents per neighborhood", "incident_neighborhood", 10, 16),
+    TileBundle("Incidents per neighborhood", "incident_neighborhood", 10, 16),
     TileBundle("Incidents per municipality", "incident_municipality", 7, 11),
-    # TileBundle("Incidents per district", "incident_district", 10, 16),
+    TileBundle("Incidents per district", "incident_district", 10, 16),
 ]
 
 logger = logging.getLogger("map_gen")
