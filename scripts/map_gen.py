@@ -18,7 +18,7 @@ class TileBundle:
         return f"{self.name} ({self.tileset})"
 
 
-BUCKET: str = "tileset-test"
+BUCKET: str = "fundermaps-tileset"
 BUNDLES: list[TileBundle] = [
     TileBundle("Analysis Foundation", "analysis_foundation", 12, 16),
     TileBundle("Analysis Report", "analysis_report", 12, 16),
