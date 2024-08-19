@@ -1,5 +1,6 @@
 import os
 import logging
+import shutil
 from concurrent.futures import ThreadPoolExecutor
 
 from fundermapssdk import FunderMapsSDK
@@ -36,10 +37,6 @@ logger = logging.getLogger("map_gen")
 
 
 async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
-    util.remove_files(".", extension=".gpkg")
-    util.remove_files(".", extension=".geojson")
-    util.remove_files(".", extension=".mbtiles")
-
     logger.info(f"Dowloading tileset '{tileset.tileset}'")
     await fundermaps.gdal.convert(
         "PG:dbname=fundermaps",
@@ -92,6 +89,13 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             executor.map(upload_file, tile_files)
+
+    util.remove_files(".", extension=".gpkg")
+    util.remove_files(".", extension=".geojson")
+    util.remove_files(".", extension=".mbtiles")
+
+    if os.path.isdir(tileset.tileset):
+        shutil.rmtree(tileset.tileset)
 
 
 @app.fundermaps_task
