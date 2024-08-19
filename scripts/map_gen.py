@@ -38,6 +38,10 @@ logger = logging.getLogger("map_gen")
 
 
 async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
+    util.remove_files(".", extension=".gpkg")
+    util.remove_files(".", extension=".geojson")
+    util.remove_files(".", extension=".mbtiles")
+
     logger.info(f"Dowloading tileset '{tileset.tileset}'")
     await fundermaps.gdal.convert(
         "PG:dbname=fundermaps",
@@ -113,10 +117,3 @@ async def run(fundermaps: FunderMapsSDK):
     for tileset in BUNDLES:
         logger.info(f"Processing tileset '{tileset.name}'")
         await process_tileset(fundermaps, tileset)
-
-
-@app.fundermaps_task_post
-async def run_post(fundermaps: FunderMapsSDK):
-    util.remove_files(".", extension=".gpkg")
-    util.remove_files(".", extension=".geojson")
-    util.remove_files(".", extension=".mbtiles")
