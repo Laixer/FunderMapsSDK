@@ -8,8 +8,7 @@ from fundermapssdk import util, app
 
 
 class TileBundle:
-    def __init__(self, name: str, tileset: str, min_zoom: int, max_zoom: int):
-        self.name = name
+    def __init__(self, tileset: str, min_zoom: int, max_zoom: int):
         self.tileset = tileset
         self.min_zoom = min_zoom
         self.max_zoom = max_zoom
@@ -20,17 +19,18 @@ class TileBundle:
 
 BUCKET: str = "fundermaps-tileset"
 BUNDLES: list[TileBundle] = [
-    TileBundle("Analysis Foundation", "analysis_foundation", 12, 16),
-    TileBundle("Analysis Report", "analysis_report", 12, 16),
-    TileBundle("Analysis Building", "analysis_building", 12, 16),
-    TileBundle("Analysis Risk", "analysis_risk", 12, 16),
-    TileBundle("Analysis Monitoring", "analysis_monitoring", 12, 16),
-    TileBundle("Facade Scan", "facade_scan", 12, 16),
-    TileBundle("Incidents", "incident", 10, 15),
-    TileBundle("Incidents per neighborhood", "incident_neighborhood", 10, 16),
-    TileBundle("Incidents per municipality", "incident_municipality", 7, 11),
-    TileBundle("Incidents per district", "incident_district", 10, 16),
+    TileBundle("analysis_foundation", 12, 16),
+    TileBundle("analysis_report", 12, 16),
+    TileBundle("analysis_building", 12, 16),
+    TileBundle("analysis_risk", 12, 16),
+    TileBundle("analysis_monitoring", 12, 16),
+    TileBundle("facade_scan", 12, 16),
+    TileBundle("incident", 10, 15),
+    TileBundle("incident_neighborhood", 10, 16),
+    TileBundle("incident_municipality", 7, 11),
+    TileBundle("incident_district", 10, 16),
 ]
+TILE_CACHE_MAX_AGE: int = 60 * 60 * 24  # 24 hours
 
 logger = logging.getLogger("map_gen")
 
@@ -81,7 +81,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
                 BUCKET,
                 local_path,
                 ExtraArgs={
-                    "CacheControl": "max-age=60",
+                    "CacheControl": f"max-age={TILE_CACHE_MAX_AGE}",
                     "ContentType": "application/x-protobuf",
                     "ContentEncoding": "gzip",
                     "ACL": "public-read",
@@ -97,5 +97,5 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK):
     for tileset in BUNDLES:
-        logger.info(f"Processing tileset '{tileset.name}'")
+        logger.info(f"Processing tileset '{tileset.tileset}'")
         await process_tileset(fundermaps, tileset)
