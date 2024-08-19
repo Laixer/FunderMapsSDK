@@ -25,10 +25,11 @@ async def run(fundermaps: FunderMapsSDK):
         current_date = datetime.now()
         formatted_date_year = current_date.strftime("%Y")
         formatted_date_month = current_date.strftime("%b").lower()
+        formatted_date_day = current_date.strftime("%d")
 
         logger.info(f"Uploading {FILE_NAME} to S3")
         await s3.upload_file(
             BUCKET,
             FILE_NAME,
-            f"model/{formatted_date_year}/{formatted_date_month}/{FILE_NAME}",
+            f"model/{formatted_date_year}/{formatted_date_month}/{formatted_date_day}/{FILE_NAME}",
         )
