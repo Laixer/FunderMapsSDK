@@ -70,3 +70,23 @@ def find_config() -> ConfigParser:
         raise FileNotFoundError("No configuration file found in the specified paths.")
 
     return config
+
+
+def validate_file_size(file_path, min_size):
+    """
+    Validates the size of a file.
+
+    Args:
+        file_path (str): The path to the file.
+        min_size (int): The minimum size the file must be.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        ValueError: If the file size is below the minimum size.
+    """
+
+    if not os.path.exists(file_path):
+        raise FileNotFoundError("File not found")
+
+    if os.path.getsize(file_path) < min_size:
+        raise ValueError("File is below the minimum")

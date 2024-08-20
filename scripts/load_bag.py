@@ -1,4 +1,3 @@
-import os
 import logging
 
 from fundermapssdk import FunderMapsSDK
@@ -29,10 +28,7 @@ async def run(fundermaps: FunderMapsSDK):
     await util.http_download_file(BASE_URL_BAG, FILE_NAME)
 
     logger.info("Checking BAG file")
-    if not os.path.exists(FILE_NAME):
-        raise FileNotFoundError("BAG file not found")
-    if os.path.getsize(FILE_NAME) < FILE_MIN_SIZE:
-        raise ValueError("BAG file is below 1GB")
+    util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
 
     logger.info("Cleaning database")
     await clean_db(fundermaps)

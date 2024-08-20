@@ -1,4 +1,3 @@
-import os
 import logging
 
 from fundermapssdk import FunderMapsSDK
@@ -6,6 +5,8 @@ from fundermapssdk import util, app
 
 
 BASE_URL_BAG: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
+FILE_NAME: str = "3dbag_nl.gpkg"
+FILE_MIN_SIZE: int = 1024 * 1024 * 1024
 
 logger = logging.getLogger("loadbag3d")
 
@@ -13,22 +14,19 @@ logger = logging.getLogger("loadbag3d")
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK):
     logger.info("Downloading BAG file")
-    await util.http_download_file(BASE_URL_BAG, "3dbag_nl.gpkg")
+    await util.http_download_file(BASE_URL_BAG, FILE_NAME)
 
     logger.info("Checking BAG file")
-    if not os.path.exists("3dbag_nl.gpkg"):
-        raise FileNotFoundError("BAG file not found")
-    if os.path.getsize("3dbag_nl.gpkg") < 1024 * 1024 * 1024:
-        raise ValueError("BAG file is below 1GB")
+    util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
 
     logger.info("Loading BAG file into database")
     await fundermaps.gdal.convert(
-        "3dbag_nl.gpkg",
+        FILE_NAME,
         "PG:dbname=fundermaps",
         "lod22_2d",
     )
     await fundermaps.gdal.convert(
-        "3dbag_nl.gpkg",
+        FILE_NAME,
         "PG:dbname=fundermaps",
         "pand",
     )

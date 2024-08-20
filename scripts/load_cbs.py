@@ -28,10 +28,7 @@ async def run(fundermaps: FunderMapsSDK):
     await util.http_download_file(BASE_URL_CBS, FILE_NAME)
 
     logger.info("Checking CBS file")
-    if not os.path.exists(FILE_NAME):
-        raise FileNotFoundError("CBS file not found")
-    if os.path.getsize(FILE_NAME) < FILE_MIN_SIZE:
-        raise ValueError("CBS file is below 1MB")
+    util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
 
     logger.info("Cleaning database")
     await clean_db(fundermaps)
