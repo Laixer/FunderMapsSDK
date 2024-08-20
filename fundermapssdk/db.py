@@ -33,6 +33,16 @@ class DbProvider:
         with self.db.cursor() as cur:
             cur.execute(f"DROP TABLE IF EXISTS {table};")
 
+    def rename_table(self, old_table: str, new_table: str):
+        """
+        Rename the specified table.
+        """
+
+        self.__logger(logging.DEBUG, f"Renaming table {old_table} to {new_table}")
+
+        with self.db.cursor() as cur:
+            cur.execute(f"ALTER TABLE {old_table} RENAME TO {new_table};")
+
     def call(self, procedure: str):
         """
         Call the specified procedure.
