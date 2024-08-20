@@ -1,5 +1,6 @@
 import boto3
 import logging
+from boto3.s3.transfer import TransferConfig
 
 from fundermapssdk.config import S3Config
 
@@ -28,7 +29,14 @@ class ObjectStorageProvider:
         """
         self.__logger(logging.DEBUG, f"Uploading file {file_path} to {key}")
 
-        self.client.upload_file(file_path, bucket, key, *args)
+        config = TransferConfig(
+            multipart_threshold=1024 * 25,
+            max_concurrency=10,
+            multipart_chunksize=1024 * 25,
+            use_threads=True,
+        )
+
+        self.client.upload_file(file_path, bucket, key, *args, Config=config)
 
         self.__logger(logging.DEBUG, f"File uploaded to {key}")
 
