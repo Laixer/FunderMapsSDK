@@ -30,6 +30,8 @@ BUNDLES: list[TileBundle] = [
     TileBundle("incident_neighborhood", 10, 16),
     TileBundle("incident_municipality", 7, 11),
     TileBundle("incident_district", 10, 16),
+    TileBundle("building_cluster", 12, 16),
+    TileBundle("building_supercluster", 12, 16),
 ]
 TILE_CACHE_MAX_AGE: int = 60 * 60 * 24  # 24 hours
 
