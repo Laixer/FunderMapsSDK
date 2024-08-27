@@ -48,11 +48,26 @@ async def attach_map_to_org(
 
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK):
+    org_id = ""
+
+    map_set = [
+        "Fundering",
+        "Pand",
+        "Rapportage",
+        "Risico",
+        "FunderScan",
+        "Incidenten",
+    ]
+
+    logger.info("Attaching maps to organization")
+    for map_name in map_set:
+        await attach_map_to_org(fundermaps, map_name, org_id)
+
     logger.info("Adding user to organization")
     await add_user_to_org(
         fundermaps,
         "Name",
         "Lastname",
         "email",
-        "org_id",
+        org_id,
     )
