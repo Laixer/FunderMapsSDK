@@ -19,15 +19,4 @@ async def run(fundermaps: FunderMapsSDK):
         db.drop_table("public.subsidence_building")
 
     logger.info("Loading GPKG file into database")
-    await fundermaps.gdal.convert(
-        FILE_NAME, "PG:dbname=fundermaps", "20210027buildings"
-    )
-
-    with fundermaps.db as db:
-        db.rename_table('"public"."20210027buildings"', "subsidence_building")
-
-
-# @app.fundermaps_task_post
-# async def run(fundermaps: FunderMapsSDK):
-#     with fundermaps.db as db:
-#         db.drop_table("public.subsidence_building")
+    await fundermaps.gdal.convert(FILE_NAME, "PG:dbname=fundermaps", "Panden")
