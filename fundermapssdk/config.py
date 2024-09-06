@@ -55,3 +55,15 @@ class S3Config:
     access_key: str
     secret_key: str
     service_uri: str
+
+
+@dataclass
+class PDFCoConfig:
+    """
+    PDFCoConfig class represents the configuration for the PDF service.
+
+    Attributes:
+        api_key (str): The API key for the PDF service.
+    """
+
+    api_key: str
