@@ -59,4 +59,4 @@ class ObjectStorageProvider:
         pass
 
     def __logger(self, level, message):
-        return self._sdk._logger.log(level, f"ObjectStorageProvider: {message}")
+        return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")

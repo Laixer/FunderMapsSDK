@@ -37,4 +37,4 @@ class PDFProvider:
             return response.json()
 
     def __logger(self, level, message):
-        return self._sdk._logger.log(level, f"PDFProvider: {message}")
+        return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")

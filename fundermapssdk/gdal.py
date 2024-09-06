@@ -52,4 +52,4 @@ class GDALProvider:
         return process.returncode == 0
 
     def __logger(self, level, message):
-        return self._sdk._logger.log(level, f"GDALProvider: {message}")
+        return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")

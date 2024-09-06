@@ -42,4 +42,4 @@ class MailProvider:
             self.__logger(logging.INFO, f"Email sent to {email.to}")
 
     def __logger(self, level, message):
-        return self._sdk._logger.log(level, f"MailProvider: {message}")
+        return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")

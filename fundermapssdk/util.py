@@ -23,8 +23,8 @@ async def http_download_file(url, dest_path):
 
     async with httpx.AsyncClient() as client:
         async with client.stream("GET", url) as response:
+            response.raise_for_status()
             with open(dest_path, "wb") as file:
-                response.raise_for_status()
                 async for chunk in response.aiter_bytes():
                     file.write(chunk)
 
