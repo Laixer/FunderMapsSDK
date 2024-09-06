@@ -22,11 +22,49 @@ def fundermaps_task_post(func):
 
 
 class App:
+    """
+    Represents an application.
+
+    Args:
+        config (ConfigParser): The configuration parser object.
+        logger (logging.Logger): The logger object.
+
+    Attributes:
+        config (ConfigParser): The configuration parser object.
+        logger (logging.Logger): The logger object.
+
+    Methods:
+        _run_tasks: Runs the tasks.
+        run: Runs the application.
+
+    """
+
     def __init__(self, config: ConfigParser, logger: logging.Logger):
+        """
+        Initializes a new instance of the App class.
+
+        Args:
+            config (ConfigParser): The configuration parser object.
+            logger (logging.Logger): The logger object for logging.
+
+        Returns:
+            None
+        """
+
         self.config = config
         self.logger = logger
 
     async def _run_tasks(self, fundermaps: FunderMapsSDK):
+        """
+        Run tasks and post tasks using the provided FunderMapsSDK instance.
+
+        Args:
+            fundermaps (FunderMapsSDK): An instance of the FunderMapsSDK.
+
+        Returns:
+            None
+        """
+
         try:
             for task_name, task_func in task_registry.items():
                 self.logger.debug(f"Running task '{task_name}'")
@@ -37,6 +75,18 @@ class App:
                 await task_func(fundermaps)
 
     def run(self):
+        """
+        Run the application.
+
+        This method initializes the necessary configurations for the application,
+        creates an instance of the `FunderMapsSDK` class, and runs the tasks using
+        asyncio.
+
+        Raises:
+            Exception: If an error occurs during the execution of the application.
+
+        """
+
         try:
             if self.config.has_section("database"):
                 db_config = DatabaseConfig(
