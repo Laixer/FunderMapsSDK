@@ -21,6 +21,31 @@ def fundermaps_task_post(func):
     return func
 
 
+class FunderMapsTask:
+    def __init__(
+        self, fundermaps: FunderMapsSDK, name: str, logger: logging.Logger = None
+    ):
+        self.fundermaps = fundermaps
+        self.name = name
+        self.logger = logger or logging.getLogger(name)
+
+    async def run(self):
+        raise NotImplementedError("Method 'run' must be implemented")
+
+    async def post_run(self):
+        pass
+
+    async def __call__(self):
+        try:
+            self.logger.info(f"Starting task '{self.name}'")
+            await self.run()
+            self.logger.info(f"Task finished '{self.name}'")
+        except Exception as e:
+            self.logger.error("An error occurred", exc_info=e)
+        finally:
+            await self.post_run()
+
+
 class App:
     """
     Represents an application.
