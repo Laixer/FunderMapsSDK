@@ -4,7 +4,7 @@ import asyncio
 from configparser import ConfigParser
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.config import DatabaseConfig, S3Config
+from fundermapssdk.config import DatabaseConfig, PDFCoConfig, S3Config
 
 
 task_registry = {}
@@ -38,20 +38,35 @@ class App:
 
     def run(self):
         try:
-            db_config = DatabaseConfig(
-                database=self.config.get("database", "database"),
-                host=self.config.get("database", "host"),
-                user=self.config.get("database", "username"),
-                password=self.config.get("database", "password"),
-                port=self.config.getint("database", "port"),
+            if self.config.has_section("database"):
+                db_config = DatabaseConfig(
+                    database=self.config.get("database", "database"),
+                    host=self.config.get("database", "host"),
+                    user=self.config.get("database", "username"),
+                    password=self.config.get("database", "password"),
+                    port=self.config.getint("database", "port"),
+                )
+            else:
+                db_config = None
+
+            if self.config.has_section("s3"):
+                s3_config = S3Config(
+                    access_key=self.config.get("s3", "access_key"),
+                    secret_key=self.config.get("s3", "secret_key"),
+                    service_uri=self.config.get("s3", "service_uri"),
+                    bucket=self.config.get("s3", "bucket"),
+                )
+            else:
+                s3_config = None
+
+            if self.config.has_section("pdf"):
+                pdf_config = PDFCoConfig(api_key=self.config.get("pdf", "api_key"))
+            else:
+                pdf_config = None
+
+            fundermaps = FunderMapsSDK(
+                db_config=db_config, s3_config=s3_config, pdf_config=pdf_config
             )
-            s3_config = S3Config(
-                access_key=self.config.get("s3", "access_key"),
-                secret_key=self.config.get("s3", "secret_key"),
-                service_uri=self.config.get("s3", "service_uri"),
-                bucket=self.config.get("s3", "bucket"),
-            )
-            fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
 
             self.logger.info("Starting application")
             asyncio.run(self._run_tasks(fundermaps))
