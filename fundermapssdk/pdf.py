@@ -26,11 +26,9 @@ class PDFProvider:
 
         timeout = httpx.Timeout(60.0, connect=5.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
-            response = await client.post(
-                f"{BASE_URL}/pdf/convert/from/url",
-                headers=headers,
-                data=parameters,
-            )
+            url = f"{BASE_URL}/pdf/convert/from/url"
+
+            response = await client.post(url, headers=headers, data=parameters)
             response.raise_for_status()
 
             self.__logger(logging.INFO, f"PDF generated from {url}")
