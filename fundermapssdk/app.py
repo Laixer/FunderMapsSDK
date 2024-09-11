@@ -73,9 +73,26 @@ class FunderMapsTask:
         )
 
     async def run(self):
+        """
+        The main method that should be implemented by subclasses.
+
+        Raises:
+            NotImplementedError: If the method is not implemented.
+
+        Returns:
+            None
+        """
+
         raise NotImplementedError("Method 'run' must be implemented")
 
     async def post_run(self):
+        """
+        Post run method that can be overridden by subclasses.
+
+        Returns:
+            None
+        """
+
         pass
 
     async def invoke(self):
