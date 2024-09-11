@@ -22,12 +22,40 @@ def fundermaps_task_post(func):
 
 
 class FunderMapsTask:
-    def __init__(
-        self, fundermaps: FunderMapsSDK, name: str, logger: logging.Logger = None
-    ):
-        self.fundermaps = fundermaps
+    def __init__(self, name: str, config: ConfigParser, logger: logging.Logger = None):
         self.name = name
-        self.logger = logger or logging.getLogger(name)
+        self.config = config
+        self.logger = logger or logging.getLogger(self.name)
+
+        if self.config.has_section("database"):
+            db_config = DatabaseConfig(
+                database=self.config.get("database", "database"),
+                host=self.config.get("database", "host"),
+                user=self.config.get("database", "username"),
+                password=self.config.get("database", "password"),
+                port=self.config.getint("database", "port"),
+            )
+        else:
+            db_config = None
+
+        if self.config.has_section("s3"):
+            s3_config = S3Config(
+                access_key=self.config.get("s3", "access_key"),
+                secret_key=self.config.get("s3", "secret_key"),
+                service_uri=self.config.get("s3", "service_uri"),
+                bucket=self.config.get("s3", "bucket"),
+            )
+        else:
+            s3_config = None
+
+        if self.config.has_section("pdf"):
+            pdf_config = PDFCoConfig(api_key=self.config.get("pdf", "api_key"))
+        else:
+            pdf_config = None
+
+        self.fundermaps = FunderMapsSDK(
+            db_config=db_config, s3_config=s3_config, pdf_config=pdf_config
+        )
 
     async def run(self):
         raise NotImplementedError("Method 'run' must be implemented")
@@ -35,15 +63,19 @@ class FunderMapsTask:
     async def post_run(self):
         pass
 
-    async def __call__(self):
+    async def invoke(self):
         try:
             self.logger.info(f"Starting task '{self.name}'")
             await self.run()
             self.logger.info(f"Task finished '{self.name}'")
         except Exception as e:
             self.logger.error("An error occurred", exc_info=e)
+            sys.exit(1)
         finally:
             await self.post_run()
+
+    def asyncio_invoke(self):
+        asyncio.run(self.invoke())
 
 
 class App:
