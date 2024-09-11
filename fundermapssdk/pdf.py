@@ -18,6 +18,7 @@ class PDFProvider:
             "url": url,
             "name": name,
             "paperSize": "A4",
+            "async": False,
         }
         headers = {
             "x-api-key": self.config.api_key,
