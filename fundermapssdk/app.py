@@ -22,6 +22,21 @@ def fundermaps_task_post(func):
 
 
 class FunderMapsTask:
+    """
+    Represents a task in the FunderMapsSDK.
+
+    Args:
+        name (str): The name of the task.
+        config (ConfigParser): The configuration parser object.
+        logger (logging.Logger, optional): The logger object. Defaults to None.
+
+    Attributes:
+        name (str): The name of the task.
+        config (ConfigParser): The configuration parser object.
+        logger (logging.Logger): The logger object.
+
+    """
+
     def __init__(self, name: str, config: ConfigParser, logger: logging.Logger = None):
         self.name = name
         self.config = config
@@ -64,6 +79,15 @@ class FunderMapsTask:
         pass
 
     async def invoke(self):
+        """
+        Invokes the task by running the `run` method and handling any exceptions that occur.
+
+        Raises:
+            Exception: If an error occurs during the task execution.
+
+        Returns:
+            None
+        """
         try:
             self.logger.info(f"Starting task '{self.name}'")
             await self.run()

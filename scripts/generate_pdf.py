@@ -5,7 +5,7 @@ from systemd import journal
 from configparser import ConfigParser
 from fundermapssdk import util, app
 
-logger = logging.getLogger("generate_pdf")
+SCRIPT_NAME = "generate_pdf"
 
 
 class GeneratePdfTask(app.FunderMapsTask):
@@ -47,4 +47,4 @@ if __name__ == "__main__":
     else:
         config = util.find_config()
 
-    GeneratePdfTask("generate_pdf", config, logger).asyncio_invoke()
+    GeneratePdfTask(SCRIPT_NAME, config).asyncio_invoke()
