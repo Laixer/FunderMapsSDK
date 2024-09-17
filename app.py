@@ -12,10 +12,18 @@ from systemd import journal
 import fundermapssdk.util
 from fundermapssdk.app import App
 
-logger = logging.getLogger("app")
-
 
 def load_script_module(script_name: str):
+    """
+    Load and execute a Python script module.
+
+    Args:
+        script_name (str): The name of the script module to load.
+
+    Raises:
+        ImportError: If the script module cannot be found or loaded.
+
+    """
     if not script_name.endswith(".py"):
         script_name += ".py"
 
@@ -29,11 +37,11 @@ def load_script_module(script_name: str):
 
 
 parser = argparse.ArgumentParser(description="FunderMaps SDK Script Runner")
-
 parser.add_argument("-c", "--config", help="path to the configuration file")
 parser.add_argument("-l", "--log-level", help="log level", default="INFO")
 parser.add_argument("--systemd", help="log to systemd", action="store_true")
 parser.add_argument("script", help="path to the script to run")
+parser.add_argument("args", nargs=argparse.REMAINDER)
 
 args = parser.parse_args()
 
@@ -41,20 +49,11 @@ if args.systemd:
     handler = journal.JournalHandler(SYSLOG_IDENTIFIER=args.script)
 else:
     handler = colorlog.StreamHandler()
-    handler.setFormatter(
-        colorlog.ColoredFormatter(
-            "%(log_color)s%(levelname)-8s %(name)s%(reset)s %(message)s"
-        )
-    )
+    color_format = "%(log_color)s%(levelname)-8s %(name)s%(reset)s %(message)s"
+    handler.setFormatter(colorlog.ColoredFormatter(color_format))
 
-# Set up logging to console
-logging.basicConfig(
-    level=args.log_level,
-    handlers=[handler],
-    format="%(message)s",
-)
+logging.basicConfig(level=args.log_level, handlers=[handler], format="%(message)s")
 
-# Find and read the configuration file
 if args.config:
     config = ConfigParser()
     config.read(args.config)
@@ -63,4 +62,5 @@ else:
 
 load_script_module(args.script)
 
-App(config, logger).run()
+logger = logging.getLogger("app")
+App(config, logger).asyncio_invoke(args.args)

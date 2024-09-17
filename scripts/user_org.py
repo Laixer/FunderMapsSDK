@@ -1,7 +1,6 @@
 import logging
 
-from fundermapssdk import FunderMapsSDK
-from fundermapssdk import app
+from fundermapssdk import FunderMapsSDK, app
 
 logger = logging.getLogger("user_org")
 
@@ -48,7 +47,7 @@ async def attach_map_to_org(
 
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK):
-    org_id = ""
+    org_id = "7a3db6ce-fee1-4587-9b92-91342d0ee761"
 
     map_set = [
         "Fundering",
@@ -59,15 +58,15 @@ async def run(fundermaps: FunderMapsSDK):
         "Incidenten",
     ]
 
-    logger.info("Attaching maps to organization")
-    for map_name in map_set:
-        await attach_map_to_org(fundermaps, map_name, org_id)
+    # logger.info("Attaching maps to organization")
+    # for map_name in map_set:
+    #     await attach_map_to_org(fundermaps, map_name, org_id)
 
     logger.info("Adding user to organization")
     await add_user_to_org(
         fundermaps,
-        "Name",
-        "Lastname",
-        "email",
+        "",
+        "",
+        "willem.bouman@quawonen.com",
         org_id,
     )

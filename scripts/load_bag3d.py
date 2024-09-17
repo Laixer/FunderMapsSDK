@@ -1,7 +1,6 @@
 import logging
 
-from fundermapssdk import FunderMapsSDK
-from fundermapssdk import util, app
+from fundermapssdk import FunderMapsSDK, util, app
 
 
 BASE_URL_BAG: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"

@@ -4,7 +4,8 @@ import logging
 from fundermapssdk import FunderMapsSDK
 from fundermapssdk import app, util
 
-FILE_NAME: str = "/data.gpkg"
+FILE_NAME: str = "/home/yorick/Downloads/dordrecht.gpkg"
+# FILE_NAME: str = "/home/yorick/Downloads/steenwijkerland.gpkg"
 FILE_MIN_SIZE: int = 1024 * 1024
 
 logger = logging.getLogger("load_subsidence")
@@ -19,4 +20,6 @@ async def run(fundermaps: FunderMapsSDK):
         db.drop_table("public.subsidence_building")
 
     logger.info("Loading GPKG file into database")
-    await fundermaps.gdal.convert(FILE_NAME, "PG:dbname=fundermaps", "Panden")
+    await fundermaps.gdal.convert(
+        FILE_NAME, "PG:dbname=fundermaps", "20200060Buildings"
+    )

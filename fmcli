@@ -1,0 +1,4 @@
+#!/bin/bash
+
+FUNDERMAPS_APP="app.py" 
+python3 "$python_script" "$@"

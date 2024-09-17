@@ -72,7 +72,7 @@ class App:
         self.config = config
         self.logger = logger
 
-    async def _run_tasks(self, fundermaps: FunderMapsSDK):
+    async def _run_tasks(self, fundermaps: FunderMapsSDK, *args):
         """
         Run tasks and post tasks using the provided FunderMapsSDK instance.
 
@@ -86,13 +86,14 @@ class App:
         try:
             for task_name, task_func in task_registry.items():
                 self.logger.debug(f"Running task '{task_name}'")
-                await task_func(fundermaps)
+                await task_func(fundermaps, *args)
+
         finally:
             for task_name, task_func in task_registry_post.items():
                 self.logger.debug(f"Running post task '{task_name}'")
-                await task_func(fundermaps)
+                await task_func(fundermaps, *args)
 
-    async def invoke(self):
+    async def invoke(self, *args):
         """
         Run the application.
 
@@ -137,12 +138,12 @@ class App:
             )
 
             self.logger.info("Starting application")
-            await self._run_tasks(fundermaps)
+            await self._run_tasks(fundermaps, *args)
             self.logger.info("Application finished")
 
         except Exception as e:
             self.logger.error("An error occurred", exc_info=e)
             sys.exit(1)
 
-    def asyncio_invoke(self):
-        asyncio.run(self.invoke())
+    def asyncio_invoke(self, *args):
+        asyncio.run(self.invoke(*args))

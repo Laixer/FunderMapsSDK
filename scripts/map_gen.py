@@ -3,9 +3,8 @@ import logging
 import shutil
 from concurrent.futures import ThreadPoolExecutor
 
-from fundermapssdk import FunderMapsSDK
+from fundermapssdk import FunderMapsSDK, util, app
 from fundermapssdk.tippecanoe import tippecanoe
-from fundermapssdk import util, app
 
 
 class TileBundle:
