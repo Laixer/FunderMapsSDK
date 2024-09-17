@@ -1,4 +1,3 @@
-import os
 import logging
 
 from fundermapssdk import FunderMapsSDK
@@ -23,3 +22,4 @@ async def run(fundermaps: FunderMapsSDK):
     await fundermaps.gdal.convert(
         FILE_NAME, "PG:dbname=fundermaps", "20200060Buildings"
     )
+    # await fundermaps.gdal.to_postgis(FILE_NAME, "20200060Buildings")

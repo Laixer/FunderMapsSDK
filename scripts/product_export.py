@@ -4,8 +4,7 @@ import shutil
 import logging
 from datetime import datetime
 
-from fundermapssdk import FunderMapsSDK
-from fundermapssdk import app
+from fundermapssdk import FunderMapsSDK, util, app
 
 
 BUCKET: str = "fundermaps"
@@ -65,11 +64,8 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
             formatted_date_month = current_date.strftime("%b").lower()
 
             logger.info(f"Uploading {csv_file} to S3")
-            await s3.upload_file(
-                BUCKET,
-                f"{csv_file}.gz",
-                f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv.gz",
-            )
+            s3_path = f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv.gz"
+            await s3.upload_file(BUCKET, f"{csv_file}.gz", s3_path)
     else:
         logger.info("No data to export")
 
