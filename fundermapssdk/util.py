@@ -1,5 +1,7 @@
 import os
+import gzip
 import glob
+import shutil
 import httpx
 
 from configparser import ConfigParser
@@ -92,7 +94,7 @@ def validate_file_size(file_path, min_size):
         raise ValueError("File is below the minimum")
 
 
-def date_path():
+def date_path(with_month=True, with_day=True):
     """
     Generates a date-based path for storing files.
 
@@ -107,4 +109,23 @@ def date_path():
     formatted_date_month = current_date.strftime("%b").lower()
     formatted_date_day = current_date.strftime("%d")
 
-    return f"{formatted_date_year}/{formatted_date_month}/{formatted_date_day}"
+    path = f"{formatted_date_year}"
+    if with_month:
+        path += f"/{formatted_date_month}"
+    if with_day:
+        path += f"/{formatted_date_day}"
+    return path
+
+
+def compress(file_path, output_path):
+    """
+    Compresses a file using gzip.
+
+    Args:
+        file_path (str): The path to the file to compress.
+        output_path (str): The path where the compressed file will be saved.
+    """
+
+    with open(file_path, "rb") as f_in:
+        with gzip.open(f"{output_path}.gz", "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)

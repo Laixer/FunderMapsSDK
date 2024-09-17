@@ -13,14 +13,14 @@ class GDALProvider:
     def _pg_connection_string(self) -> str:
         return f"PG:dbname='{self.config.database}' host='{self.config.host}' port='{self.config.port}' user='{self.config.user}' password='{self.config.password}'"
 
-    async def from_postgis(self, table: str, output: str, *args) -> bool:
+    async def from_postgis(self, output: str, *args) -> bool:
         return await self.convert(
             self._pg_connection_string(),
             output,
             *args,
         )
 
-    async def to_postgis(self, input: str, table: str, *args) -> bool:
+    async def to_postgis(self, input: str, *args) -> bool:
         return await self.convert(
             input,
             self._pg_connection_string(),
