@@ -1,8 +1,6 @@
 import logging
-from datetime import datetime
 
-from fundermapssdk import FunderMapsSDK
-from fundermapssdk import app
+from fundermapssdk import FunderMapsSDK, util, app
 
 
 BUCKET: str = "fundermaps"
@@ -18,11 +16,6 @@ async def run(fundermaps: FunderMapsSDK):
     await fundermaps.gdal.convert("PG:dbname=fundermaps", OUTPUT_FILE_NAME, LAYER_NAME)
 
     with fundermaps.s3 as s3:
-        current_date = datetime.now()
-        formatted_date_year = current_date.strftime("%Y")
-        formatted_date_month = current_date.strftime("%b").lower()
-        formatted_date_day = current_date.strftime("%d")
-
         logger.info(f"Uploading {OUTPUT_FILE_NAME} to S3")
-        s3_path = f"model/{formatted_date_year}/{formatted_date_month}/{formatted_date_day}/{OUTPUT_FILE_NAME}"
+        s3_path = f"model/{util.datetime_path()}/{OUTPUT_FILE_NAME}"
         await s3.upload_file(BUCKET, OUTPUT_FILE_NAME, s3_path)

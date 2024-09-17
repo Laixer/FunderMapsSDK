@@ -9,8 +9,7 @@ import argparse
 import importlib.util
 from systemd import journal
 
-import fundermapssdk.util
-from fundermapssdk.app import App
+from fundermapssdk import util, app
 
 
 def load_script_module(script_name: str):
@@ -58,9 +57,9 @@ if args.config:
     config = ConfigParser()
     config.read(args.config)
 else:
-    config = fundermapssdk.util.find_config()
+    config = util.find_config()
 
 load_script_module(args.script)
 
 logger = logging.getLogger("app")
-App(config, logger).asyncio_invoke(args.args)
+app.App(config, logger).asyncio_invoke(args.args)

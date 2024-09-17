@@ -90,3 +90,21 @@ def validate_file_size(file_path, min_size):
 
     if os.path.getsize(file_path) < min_size:
         raise ValueError("File is below the minimum")
+
+
+def datetime_path():
+    """
+    Generates a datetime-based path for storing files.
+
+    Returns:
+        str: The generated path based on the current date.
+    """
+
+    from datetime import datetime
+
+    current_date = datetime.now()
+    formatted_date_year = current_date.strftime("%Y")
+    formatted_date_month = current_date.strftime("%b").lower()
+    formatted_date_day = current_date.strftime("%d")
+
+    return f"{formatted_date_year}/{formatted_date_month}/{formatted_date_day}"
