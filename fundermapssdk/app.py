@@ -12,111 +12,31 @@ task_registry_post = {}
 
 
 def fundermaps_task(func):
+    """
+    Decorator function to register a task in the FunderMaps SDK.
+
+    Parameters:
+        func (function): The task function to be registered.
+
+    Returns:
+        function: The registered task function.
+    """
     task_registry[func.__name__] = func
     return func
 
 
 def fundermaps_task_post(func):
-    task_registry_post[func.__name__] = func
-    return func
-
-
-class FunderMapsTask:
     """
-    Represents a task in the FunderMapsSDK.
+    Decorator function to register a task function in the task registry.
 
     Args:
-        name (str): The name of the task.
-        config (ConfigParser): The configuration parser object.
-        logger (logging.Logger, optional): The logger object. Defaults to None.
+        func: The task function to register
 
-    Attributes:
-        name (str): The name of the task.
-        config (ConfigParser): The configuration parser object.
-        logger (logging.Logger): The logger object.
-
+    Returns:
+        The task function
     """
-
-    def __init__(self, name: str, config: ConfigParser, logger: logging.Logger = None):
-        self.name = name
-        self.config = config
-        self.logger = logger or logging.getLogger(self.name)
-
-        if self.config.has_section("database"):
-            db_config = DatabaseConfig(
-                database=self.config.get("database", "database"),
-                host=self.config.get("database", "host"),
-                user=self.config.get("database", "username"),
-                password=self.config.get("database", "password"),
-                port=self.config.getint("database", "port"),
-            )
-        else:
-            db_config = None
-
-        if self.config.has_section("s3"):
-            s3_config = S3Config(
-                access_key=self.config.get("s3", "access_key"),
-                secret_key=self.config.get("s3", "secret_key"),
-                service_uri=self.config.get("s3", "service_uri"),
-                bucket=self.config.get("s3", "bucket"),
-            )
-        else:
-            s3_config = None
-
-        if self.config.has_section("pdf"):
-            pdf_config = PDFCoConfig(api_key=self.config.get("pdf", "api_key"))
-        else:
-            pdf_config = None
-
-        self.fundermaps = FunderMapsSDK(
-            db_config=db_config, s3_config=s3_config, pdf_config=pdf_config
-        )
-
-    async def run(self):
-        """
-        The main method that should be implemented by subclasses.
-
-        Raises:
-            NotImplementedError: If the method is not implemented.
-
-        Returns:
-            None
-        """
-
-        raise NotImplementedError("Method 'run' must be implemented")
-
-    async def post_run(self):
-        """
-        Post run method that can be overridden by subclasses.
-
-        Returns:
-            None
-        """
-
-        pass
-
-    async def invoke(self):
-        """
-        Invokes the task by running the `run` method and handling any exceptions that occur.
-
-        Raises:
-            Exception: If an error occurs during the task execution.
-
-        Returns:
-            None
-        """
-        try:
-            self.logger.info(f"Starting task '{self.name}'")
-            await self.run()
-            self.logger.info(f"Task finished '{self.name}'")
-        except Exception as e:
-            self.logger.error("An error occurred", exc_info=e)
-            sys.exit(1)
-        finally:
-            await self.post_run()
-
-    def asyncio_invoke(self):
-        asyncio.run(self.invoke())
+    task_registry_post[func.__name__] = func
+    return func
 
 
 class App:
@@ -172,7 +92,7 @@ class App:
                 self.logger.debug(f"Running post task '{task_name}'")
                 await task_func(fundermaps)
 
-    def run(self):
+    async def invoke(self):
         """
         Run the application.
 
@@ -217,9 +137,12 @@ class App:
             )
 
             self.logger.info("Starting application")
-            asyncio.run(self._run_tasks(fundermaps))
+            await self._run_tasks(fundermaps)
             self.logger.info("Application finished")
 
         except Exception as e:
             self.logger.error("An error occurred", exc_info=e)
             sys.exit(1)
+
+    def asyncio_invoke(self):
+        asyncio.run(self.invoke())
