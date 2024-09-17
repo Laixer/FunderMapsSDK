@@ -1,4 +1,3 @@
-import os
 import logging
 
 from fundermapssdk import FunderMapsSDK
@@ -23,7 +22,7 @@ async def clean_db(fundermaps: FunderMapsSDK):
 
 
 @app.fundermaps_task
-async def run(fundermaps: FunderMapsSDK):
+async def run(fundermaps: FunderMapsSDK, args):
     logger.info("Downloading CBS file")
     await util.http_download_file(BASE_URL_CBS, FILE_NAME)
 

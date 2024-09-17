@@ -11,7 +11,7 @@ logger = logging.getLogger("loadbag3d")
 
 
 @app.fundermaps_task
-async def run(fundermaps: FunderMapsSDK):
+async def run(fundermaps: FunderMapsSDK, args):
     logger.info("Downloading BAG file")
     await util.http_download_file(BASE_URL_BAG, FILE_NAME)
 
