@@ -33,6 +33,16 @@ class DbProvider:
         with self.db.cursor() as cur:
             cur.execute(f"DROP TABLE IF EXISTS {table};")
 
+    def truncate_table(self, table: str):
+        """
+        Truncate the specified table.
+        """
+
+        self.__logger(logging.DEBUG, f"Truncating table {table}")
+
+        with self.db.cursor() as cur:
+            cur.execute(f"TRUNCATE TABLE {table};")
+
     # TODO: Add support for schema
     def rename_table(self, old_table: str, new_table: str):
         """
