@@ -92,9 +92,9 @@ def validate_file_size(file_path, min_size):
         raise ValueError("File is below the minimum")
 
 
-def datetime_path():
+def date_path():
     """
-    Generates a datetime-based path for storing files.
+    Generates a date-based path for storing files.
 
     Returns:
         str: The generated path based on the current date.
