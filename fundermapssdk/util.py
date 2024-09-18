@@ -117,7 +117,7 @@ def date_path(with_month=True, with_day=True):
     return path
 
 
-def compress(file_path, output_path):
+def compress_file(file_path, output_path):
     """
     Compresses a file using gzip.
 
@@ -127,5 +127,5 @@ def compress(file_path, output_path):
     """
 
     with open(file_path, "rb") as f_in:
-        with gzip.open(f"{output_path}.gz", "wb") as f_out:
+        with gzip.open(output_path, "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)

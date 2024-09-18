@@ -1,6 +1,4 @@
 import csv
-import gzip
-import shutil
 import logging
 from datetime import datetime
 
@@ -54,8 +52,7 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
                     writer.writerow(row)
                     data_written = True
 
-    with open(csv_file, "rb") as f_in, gzip.open(f"{csv_file}.gz", "wb") as f_out:
-        shutil.copyfileobj(f_in, f_out)
+    util.compress_file(csv_file, f"{csv_file}.gz")
 
     if data_written:
         with fundermaps.s3 as s3:
