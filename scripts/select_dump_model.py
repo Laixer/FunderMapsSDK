@@ -2,8 +2,7 @@ import csv
 import logging
 from datetime import datetime
 
-from fundermapssdk import FunderMapsSDK
-from fundermapssdk import app
+from fundermapssdk import FunderMapsSDK, util, app
 
 
 BUCKET: str = "fundermaps"
@@ -14,9 +13,9 @@ logger = logging.getLogger("analysis_full")
 
 
 @app.fundermaps_task
-async def run(fundermaps: FunderMapsSDK):
-    with open("/home/yorick/Downloads/SAM_2024_03.csv", "r") as file:
-
+async def run(fundermaps: FunderMapsSDK, args):
+    file_path = "/home/yorick/Downloads/SAM_2024_03.csv"
+    with open(file_path, "r") as file:
         reader = csv.reader(file)
         # _header = next(reader)
 
@@ -35,6 +34,7 @@ async def run(fundermaps: FunderMapsSDK):
                         cur.execute(insert_query, (building_id,))
 
             with db.db.cursor() as cur:
+                # Load from script
                 query = """
                     SELECT *
                     FROM public.model_supply ms
@@ -58,13 +58,6 @@ async def run(fundermaps: FunderMapsSDK):
                         data_written = True
 
         with fundermaps.s3 as s3:
-            current_date = datetime.now()
-            formatted_date_year = current_date.strftime("%Y")
-            formatted_date_month = current_date.strftime("%b").lower()
-
             logger.info(f"Uploading {csv_file} to S3")
-            await s3.upload_file(
-                BUCKET,
-                csv_file,
-                f"export/{formatted_date_year}/{formatted_date_month}/{csv_file}",
-            )
+            s3_path = f"export/{csv_file}"
+            await s3.upload_file(BUCKET, csv_file, s3_path)
