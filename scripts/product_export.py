@@ -71,6 +71,6 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
 
 
 @app.fundermaps_task
-async def run(fundermaps: FunderMapsSDK):
+async def run(fundermaps: FunderMapsSDK, args):
     for organization in ORGANIZATIONS:
         await process_export(fundermaps, organization)

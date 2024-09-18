@@ -13,7 +13,7 @@ logger = logging.getLogger("inquiry_file")
 
 
 @app.fundermaps_task
-async def run(fundermaps: FunderMapsSDK):
+async def run(fundermaps: FunderMapsSDK, args):
     with fundermaps.s3 as s3:
         with fundermaps.db as db:
             with db.db.cursor() as cur:

@@ -100,7 +100,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
 
 
 @app.fundermaps_task
-async def run(fundermaps: FunderMapsSDK):
+async def run(fundermaps: FunderMapsSDK, args):
     for tileset in BUNDLES:
         logger.info(f"Processing tileset '{tileset.tileset}'")
         await process_tileset(fundermaps, tileset)
