@@ -19,16 +19,8 @@ async def run(fundermaps: FunderMapsSDK, args):
     util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
 
     logger.info("Loading BAG file into database")
-    await fundermaps.gdal.convert(
-        FILE_NAME,
-        "PG:dbname=fundermaps",
-        "lod22_2d",
-    )
-    await fundermaps.gdal.convert(
-        FILE_NAME,
-        "PG:dbname=fundermaps",
-        "pand",
-    )
+    await fundermaps.gdal.to_postgis(FILE_NAME, "lod22_2d")
+    await fundermaps.gdal.to_postgis(FILE_NAME, "pand")
 
     # with fundermaps.db as db:
     #     logger.info("Loading buildings into geocoder")

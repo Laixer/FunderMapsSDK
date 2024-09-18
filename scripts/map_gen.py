@@ -44,7 +44,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
     )
 
     logger.info(f"Converting tileset '{tileset.tileset}' to GeoJSON")
-    await fundermaps.gdal.convert(
+    await fundermaps.gdal.ogr2ogr(
         f"{tileset.tileset}.gpkg",
         f"{tileset.tileset}.geojson",
     )

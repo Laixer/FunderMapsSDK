@@ -14,22 +14,14 @@ class GDALProvider:
         return f"PG:dbname='{self.config.database}' host='{self.config.host}' port='{self.config.port}' user='{self.config.user}' password='{self.config.password}'"
 
     async def from_postgis(self, output: str, *args) -> bool:
-        return await self.convert(
-            self._pg_connection_string(),
-            output,
-            *args,
-        )
+        input = self._pg_connection_string()
+        return await self.ogr2ogr(input, output, *args)
 
     async def to_postgis(self, input: str, *args) -> bool:
-        return await self.convert(
-            input,
-            self._pg_connection_string(),
-            *args,
-        )
+        output = self._pg_connection_string()
+        return await self.ogr2ogr(input, output, *args)
 
-    # TODO: Rename to ogr2ogr
-    # TODO: Add driver
-    async def convert(self, input: str, output: str, *args) -> bool:
+    async def ogr2ogr(self, input: str, output: str, *args) -> bool:
         is_file = os.path.isfile(input)
 
         if is_file and not os.path.exists(input):
@@ -41,12 +33,6 @@ class GDALProvider:
             driver = "GPKG"
         elif output.endswith(".geojson"):
             driver = "GeoJSONSeq"
-
-        # if output.startswith("PG:"):
-        #     output = f"PG:dbname='{self.config.database}' host='{self.config.host}' port='{self.config.port}' user='{self.config.user}' password='{self.config.password}'"
-
-        # if input.startswith("PG:"):
-        #     input = f"PG:dbname='{self.config.database}' host='{self.config.host}' port='{self.config.port}' user='{self.config.user}' password='{self.config.password}'"
 
         process = await asyncio.create_subprocess_exec(
             "ogr2ogr",

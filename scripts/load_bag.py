@@ -33,10 +33,7 @@ async def run(fundermaps: FunderMapsSDK, args):
     await clean_db(fundermaps)
 
     logger.info("Loading BAG file into database")
-    await fundermaps.gdal.convert(
-        FILE_NAME,
-        "PG:dbname=fundermaps",
-    )
+    await fundermaps.gdal.to_postgis(FILE_NAME)
 
     with fundermaps.db as db:
         logger.info("Loading buildings into geocoder")
