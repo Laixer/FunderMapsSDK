@@ -1,13 +1,7 @@
-import os
 import logging
-import shutil
-import boto3
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 
-from fundermapssdk import FunderMapsSDK
+from fundermapssdk import FunderMapsSDK, util, app
 from fundermapssdk.tippecanoe import tippecanoe
-from fundermapssdk import util, app
 
 logger = logging.getLogger("inquiry_file")
 

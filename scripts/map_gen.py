@@ -39,10 +39,8 @@ logger = logging.getLogger("map_gen")
 
 async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
     logger.info(f"Dowloading tileset '{tileset.tileset}'")
-    await fundermaps.gdal.convert(
-        "PG:dbname=fundermaps",
-        f"{tileset.tileset}.gpkg",
-        f"maplayer.{tileset.tileset}",
+    await fundermaps.gdal.from_postgis(
+        f"{tileset.tileset}.gpkg", f"maplayer.{tileset.tileset}"
     )
 
     logger.info(f"Converting tileset '{tileset.tileset}' to GeoJSON")

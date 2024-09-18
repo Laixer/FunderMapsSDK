@@ -17,7 +17,6 @@ async def run(fundermaps: FunderMapsSDK, args):
     file_path = "/home/yorick/Downloads/SAM_2024_03.csv"
     with open(file_path, "r") as file:
         reader = csv.reader(file)
-        # _header = next(reader)
 
         with fundermaps.db as db:
             # TODO: Run everything in a transaction
@@ -52,10 +51,8 @@ async def run(fundermaps: FunderMapsSDK, args):
 
                     writer.writerow(column_names)
 
-                    data_written = False
                     for row in cur:
                         writer.writerow(row)
-                        data_written = True
 
         with fundermaps.s3 as s3:
             logger.info(f"Uploading {csv_file} to S3")
