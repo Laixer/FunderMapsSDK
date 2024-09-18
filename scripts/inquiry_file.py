@@ -1,7 +1,6 @@
 import logging
 
 from fundermapssdk import FunderMapsSDK, util, app
-from fundermapssdk.tippecanoe import tippecanoe
 
 logger = logging.getLogger("inquiry_file")
 
@@ -18,55 +17,11 @@ async def run(fundermaps: FunderMapsSDK, args):
 
                 cur.execute(query)
 
-                # data_written = False
                 for row in cur:
-                    print(row)
-
-                    # def file_exists(bucket_name, file_key):
-                    """Checks if a file exists in an S3 bucket.
-
-                    Args:
-                        bucket_name: The name of the S3 bucket.
-                        file_key: The key (path) of the file in the bucket.
-
-                    Returns:
-                        True if the file exists, False otherwise.
-                    """
-
-                    # s3 = boto3.client('s3')
-                    # try:
-                    s3.client.head_object(
-                        Bucket="fundermaps", Key=f"inquiry-report/{row[2]}"
-                    )
-                    logger.info(f"File {row[2]} exists")
-                    # return True
-                    # except Exception as e:
-                    #     logger.error(f"File {row[2]} does not exist", exc_info=e)
-
-                    # await asyncio.sleep(2)
-                    # if e.response["Error"]["Code"] == "404":
-                    #     # return False
-                    # else:
-                    #     # Something else has gone wrong.
-                    #     raise e
-
-                    # Example usage
-                    # bucket_name = 'your-bucket-name'
-                    # file_key = 'path/to/your/file.txt'
-
-                    # if file_exists(bucket_name, file_key):
-                    # print("File exists!")
-                    # else:
-                    # print("File does not exist.")
-
-                    # s3.client.upload_file(
-                    #     local_path,
-                    #     BUCKET,
-                    #     local_path,
-                    #     ExtraArgs={
-                    #         "CacheControl": f"max-age={TILE_CACHE_MAX_AGE}",
-                    #         "ContentType": "application/x-protobuf",
-                    #         "ContentEncoding": "gzip",
-                    #         "ACL": "public-read",
-                    #     },
-                    # )
+                    try:
+                        s3.client.head_object(
+                            Bucket="fundermaps", Key=f"inquiry-report/{row[2]}"
+                        )
+                        logger.info(f"File {row[2]} exists")
+                    except Exception as e:
+                        logger.error(f"File {row[2]} does not exist", exc_info=e)

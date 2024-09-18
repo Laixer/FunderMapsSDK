@@ -4,7 +4,6 @@ from fundermapssdk import FunderMapsSDK, util, app
 
 
 BUCKET: str = "fundermaps"
-
 LAYERS: list[str] = [
     "maplayer.analysis_full",
     "maplayer.incident_district",
