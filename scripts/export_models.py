@@ -10,6 +10,7 @@ LAYERS: list[str] = [
     "maplayer.incident_district",
     "maplayer.incident_municipality",
     "maplayer.incident_neighborhood",
+    "maplayer.facade_scan",
 ]
 
 logger = logging.getLogger("export_models")
