@@ -1,6 +1,5 @@
 import csv
 import logging
-from datetime import datetime
 
 from fundermapssdk import FunderMapsSDK, util, app
 

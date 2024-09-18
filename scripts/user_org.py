@@ -46,7 +46,7 @@ async def attach_map_to_org(
 
 
 @app.fundermaps_task
-async def run(fundermaps: FunderMapsSDK):
+async def run(fundermaps: FunderMapsSDK, args):
     org_id = "7a3db6ce-fee1-4587-9b92-91342d0ee761"
 
     map_set = [

@@ -11,8 +11,6 @@ logger = logging.getLogger("refresh_models")
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK, args):
     with fundermaps.db as db:
-        # TODO: Check if enough data has changed to refresh models
-
         logger.info("Refreshing building models")
         db.refresh_materialized_view("data.building_sample")
         db.refresh_materialized_view("data.cluster_sample")
