@@ -31,8 +31,11 @@ BUNDLES: list[TileBundle] = [
     TileBundle("incident_district", 10, 16),
     TileBundle("building_cluster", 12, 16),
     TileBundle("building_supercluster", 12, 16),
+    TileBundle("boundry_municipality", 7, 11),
+    TileBundle("boundry_district", 10, 16),
+    TileBundle("boundry_neighborhood", 10, 16),
 ]
-TILE_CACHE_MAX_AGE: int = 60 * 60 * 24  # 24 hours
+TILE_CACHE_MAX_AGE: int = 60 * 60 * 6  # 6 hours
 
 logger = logging.getLogger("map_gen")
 
@@ -98,7 +101,14 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
 
 
 @app.fundermaps_task
-async def run(fundermaps: FunderMapsSDK, args):
-    for tileset in BUNDLES:
-        logger.info(f"Processing tileset '{tileset.tileset}'")
-        await process_tileset(fundermaps, tileset)
+async def run(fundermaps: FunderMapsSDK, args: list[str]):
+    if len(args) > 0:
+        for tileset_name in args:
+            if tileset_name in [b.tileset for b in BUNDLES]:
+                tileset = next(b for b in BUNDLES if b.tileset == tileset_name)
+                logger.info(f"Processing tileset '{tileset.tileset}'")
+                await process_tileset(fundermaps, tileset)
+    else:
+        for tileset in BUNDLES:
+            logger.info(f"Processing tileset '{tileset.tileset}'")
+            await process_tileset(fundermaps, tileset)
