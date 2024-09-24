@@ -25,7 +25,7 @@ BUNDLES: list[TileBundle] = [
     TileBundle("analysis_risk", 12, 16),
     TileBundle("analysis_monitoring", 12, 16),
     TileBundle("facade_scan", 12, 16),
-    TileBundle("incident", 10, 15),
+    TileBundle("incident", 12, 16),
     TileBundle("incident_neighborhood", 10, 16),
     TileBundle("incident_municipality", 7, 11),
     TileBundle("incident_district", 10, 16),
