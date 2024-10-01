@@ -14,7 +14,7 @@ async def add_user_to_org(
 ):
     with fundermaps.db as db:
         with db.db.cursor() as cur:
-            query = "CALL application.create_org_user(%s, %s, %s, %s)"
+            query = "CALL application.create_org_user(%s, NULLIF(%s, ''), NULLIF(%s, ''), %s)"
 
             cur.execute(
                 query,
