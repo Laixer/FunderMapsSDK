@@ -14,7 +14,7 @@ async def add_user_to_org(
 ):
     with fundermaps.db as db:
         with db.db.cursor() as cur:
-            query = "CALL application.create_org_user(%s, NULLIF(%s, ''), NULLIF(%s, ''), %s)"
+            query = "CALL application.create_org_user(NULLIF(%s, ''), NULLIF(%s, ''), %s, %s)"
 
             cur.execute(
                 query,
@@ -47,7 +47,7 @@ async def attach_map_to_org(
 
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK, args):
-    org_id = "7a3db6ce-fee1-4587-9b92-91342d0ee761"
+    org_id = "c96e7b54-63ce-4017-82a1-dcdec054bfd1"
 
     map_set = [
         "Fundering",
@@ -67,6 +67,6 @@ async def run(fundermaps: FunderMapsSDK, args):
         fundermaps,
         "",
         "",
-        "willem.bouman@quawonen.com",
+        "leeuwen.e@woerden.nl",
         org_id,
     )
