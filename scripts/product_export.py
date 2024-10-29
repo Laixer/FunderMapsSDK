@@ -12,6 +12,7 @@ ORGANIZATIONS: list[str] = [
     "c06a1fc6-6452-4b88-85fd-ba50016c578f",
     "58872000-cb69-433a-91ba-165a9d0b4710",
     "0ca4d02d-8206-4453-ba45-84f532c868f3",
+    "3f48a4f9-0277-4c68-8be8-55df0fa2645c",
 ]
 
 logger = logging.getLogger("product_export")
