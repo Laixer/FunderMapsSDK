@@ -5,6 +5,23 @@ from fundermapssdk import FunderMapsSDK, app
 logger = logging.getLogger("user_org")
 
 
+async def add_org(fundermaps: FunderMapsSDK, name: str):
+    with fundermaps.db as db:
+        with db.db.cursor() as cur:
+            query = "INSERT INTO application.organization (name, email) VALUES (%s, LOWER(REPLACE(%s, ' ', '') || '@fundermaps.com')) RETURNING id"
+
+            cur.execute(
+                query,
+                (
+                    name,
+                    name,
+                ),
+            )
+
+            result = cur.fetchone()
+            return result[0]
+
+
 async def add_user_to_org(
     fundermaps: FunderMapsSDK,
     first_name: str,
@@ -21,6 +38,26 @@ async def add_user_to_org(
                 (
                     first_name,
                     last_name,
+                    email,
+                    organization_id,
+                ),
+            )
+
+
+async def update_user_to_org_role(
+    fundermaps: FunderMapsSDK,
+    email: str,
+    role: str,
+    organization_id: str,
+):
+    with fundermaps.db as db:
+        with db.db.cursor() as cur:
+            query = "UPDATE application.organization_user SET role = %s WHERE user_id = (SELECT id FROM application.user WHERE email = %s) AND organization_id = %s"
+
+            cur.execute(
+                query,
+                (
+                    role,
                     email,
                     organization_id,
                 ),

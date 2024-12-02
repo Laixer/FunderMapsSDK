@@ -3,9 +3,9 @@ import logging
 
 from fundermapssdk import FunderMapsSDK, app, util
 
-FILE_NAME: str = "/home/yorick/Downloads/dordrecht.gpkg"
-# FILE_NAME: str = "/home/yorick/Downloads/steenwijkerland.gpkg"
-FILE_MIN_SIZE: int = 1024 * 1024
+FILE_NAME: str = "/home/eve/Downloads/groningen-img.gpkg"
+# FILE_NAME: str = "/home/eve/Downloads/steenwijkerland.gpkg"
+FILE_MIN_SIZE: int = 1024 * 512  # 512 KB
 
 logger = logging.getLogger("load_subsidence")
 
@@ -19,4 +19,4 @@ async def run(fundermaps: FunderMapsSDK, args):
         db.drop_table("public.subsidence_building")
 
     logger.info("Loading GPKG file into database")
-    await fundermaps.gdal.to_postgis(FILE_NAME, "20200060Buildings")
+    await fundermaps.gdal.to_postgis(FILE_NAME, "Panden")
