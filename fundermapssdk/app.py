@@ -116,9 +116,9 @@ class App:
                 db_config=db_config, s3_config=s3_config, pdf_config=pdf_config
             )
 
-            self.logger.info("Starting application")
+            self.logger.debug("Starting application")
             await self._run_tasks(fundermaps, *args)
-            self.logger.info("Application finished")
+            self.logger.debug("Application finished")
 
         except Exception as e:
             self.logger.error("An error occurred", exc_info=e)
