@@ -8,7 +8,6 @@ from fundermapssdk.config import DatabaseConfig, PDFCoConfig, S3Config
 
 
 task_registry = {}
-task_registry_post = {}
 
 
 def fundermaps_task(func):
@@ -22,20 +21,6 @@ def fundermaps_task(func):
         function: The registered task function.
     """
     task_registry[func.__name__] = func
-    return func
-
-
-def fundermaps_task_post(func):
-    """
-    Decorator function to register a task function in the task registry.
-
-    Args:
-        func: The task function to register
-
-    Returns:
-        The task function
-    """
-    task_registry_post[func.__name__] = func
     return func
 
 
@@ -74,7 +59,7 @@ class App:
 
     async def _run_tasks(self, fundermaps: FunderMapsSDK, *args):
         """
-        Run tasks and post tasks using the provided FunderMapsSDK instance.
+        Run the tasks.
 
         Args:
             fundermaps (FunderMapsSDK): An instance of the FunderMapsSDK.
@@ -83,15 +68,9 @@ class App:
             None
         """
 
-        try:
-            for task_name, task_func in task_registry.items():
-                self.logger.debug(f"Running task '{task_name}'")
-                await task_func(fundermaps, *args)
-
-        finally:
-            for task_name, task_func in task_registry_post.items():
-                self.logger.debug(f"Running post task '{task_name}'")
-                await task_func(fundermaps, *args)
+        for task_name, task_func in task_registry.items():
+            self.logger.debug(f"Running task '{task_name}'")
+            await task_func(fundermaps, *args)
 
     async def invoke(self, *args):
         """
