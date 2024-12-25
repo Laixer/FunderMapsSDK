@@ -108,9 +108,9 @@ class FunderMapsSDK:
         **kwargs,
     ):
         self.sdk_directory = os.path.dirname(os.path.realpath(__file__))
-        self.current_working_directory = os.getcwd()
+        self.working_directory = os.getcwd()
         self.tmp_directory = kwargs.get(
-            "tmp_dir", os.path.join(self.current_working_directory, "tmp")
+            "tmp_dir", os.path.join(self.working_directory, "tmp")
         )
 
         self.mail_config = mail_config
