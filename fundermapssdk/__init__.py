@@ -1,5 +1,6 @@
 import os
 import logging
+import httpx
 
 from fundermapssdk.db import DbProvider
 from fundermapssdk.gdal import GDALProvider
@@ -9,6 +10,36 @@ from fundermapssdk.pdf import PDFProvider
 from fundermapssdk.storage import ObjectStorageProvider
 
 logger = logging.getLogger(__name__)
+
+
+class File:
+    def __init__(self, sdk):
+        self.sdk = sdk
+
+    # TODO: Call file validation function
+    # TODO: Find some temporary directory to download the file
+    async def http_download(self, url, dest_path):
+        """
+        Downloads a file from the given URL and saves it to the specified destination path.
+
+        Args:
+            url (str): The URL of the file to download.
+            dest_path (str): The destination path where the downloaded file will be saved.
+
+        Raises:
+            httpx.HTTPError: If there is an error during the HTTP request.
+
+        """
+
+        if os.path.exists(dest_path):
+            os.remove(dest_path)
+
+        async with httpx.AsyncClient() as client:
+            async with client.stream("GET", url) as response:
+                response.raise_for_status()
+                with open(dest_path, "wb") as file:
+                    async for chunk in response.aiter_bytes():
+                        file.write(chunk)
 
 
 class FunderMapsSDK:
@@ -55,7 +86,9 @@ class FunderMapsSDK:
         self.s3_config = s3_config
         self.pdf_config = pdf_config
 
-        self._service_providers = {}
+        self._service_providers = {
+            "file": File(self),
+        }
         self._logger = logger
 
     def _mail_provider(self):
@@ -107,6 +140,10 @@ class FunderMapsSDK:
             self._logger.debug("PDF provider initialized")
 
         return self._service_providers["pdf"]
+
+    @property
+    def file(self):
+        return self._service_providers["file"]
 
     @property
     def mail(self):

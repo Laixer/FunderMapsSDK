@@ -7,6 +7,7 @@ import httpx
 from configparser import ConfigParser
 
 
+# TODO: Has moved to fundermapssdk
 async def http_download_file(url, dest_path):
     """
     Downloads a file from the given URL and saves it to the specified destination path.
