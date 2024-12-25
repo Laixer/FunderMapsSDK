@@ -47,6 +47,7 @@ def remove_files(directory, extension=".gpkg"):
         os.remove(file_path)
 
 
+# TODO: pass path suggestion as argument
 def find_config() -> ConfigParser:
     """
     Finds and reads the configuration file.

@@ -2,6 +2,7 @@ import os
 import logging
 import httpx
 
+from fundermapssdk import util
 from fundermapssdk.db import DbProvider
 from fundermapssdk.gdal import GDALProvider
 from fundermapssdk.mail import MailProvider
@@ -16,9 +17,8 @@ class File:
     def __init__(self, sdk):
         self.sdk = sdk
 
-    # TODO: Call file validation function
     # TODO: Find some temporary directory to download the file
-    async def http_download(self, url, dest_path):
+    async def http_download(self, url, dest_path, min_size=0):
         """
         Downloads a file from the given URL and saves it to the specified destination path.
 
@@ -31,15 +31,37 @@ class File:
 
         """
 
-        if os.path.exists(dest_path):
-            os.remove(dest_path)
+        # TODO: Download into a temporary directory
+        dest_dir = os.path.dirname(dest_path)
+        extension = os.path.basename(dest_path)
 
-        async with httpx.AsyncClient() as client:
-            async with client.stream("GET", url) as response:
-                response.raise_for_status()
-                with open(dest_path, "wb") as file:
-                    async for chunk in response.aiter_bytes():
-                        file.write(chunk)
+        # Remove any existing files with the same extension
+        util.remove_files(dest_dir, extension=extension)
+
+        try:
+            logger.debug(f"Downloading file from {url} to {dest_path}")
+
+            async with httpx.AsyncClient() as client:
+                async with client.stream("GET", url) as response:
+                    response.raise_for_status()
+
+                    with open(dest_path, "wb") as file:
+                        async for chunk in response.aiter_bytes():
+                            file.write(chunk)
+
+            logger.debug(f"File downloaded from {url} to {dest_path}")
+
+            if min_size > 0:
+                util.validate_file_size(dest_path, min_size)
+                logger.debug(f"File size validated: {dest_path}")
+
+        except Exception as e:
+            logger.error(f"Error downloading file: {e}")
+
+            # Remove the file if it was created
+            util.remove_files(dest_dir, extension=extension)
+
+            raise
 
 
 class FunderMapsSDK:

@@ -1,19 +1,24 @@
 import logging
 
-from fundermapssdk import FunderMapsSDK, util, app
+from fundermapssdk import FunderMapsSDK, app
 
-
-BASE_URL_BAG: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
 FILE_NAME: str = "3dbag_nl.gpkg"
 FILE_MIN_SIZE: int = 1024 * 1024 * 1024
 
 logger = logging.getLogger("loadbag3d")
 
 
+# TODO: Define the arguments for the script in the decorator
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK, args):
+    if len(args) < 1:
+        logger.error("Missing URL argument")
+        return
+
+    url = args[0]
+
     logger.info("Downloading BAG file")
-    await util.http_download_file(BASE_URL_BAG, FILE_NAME)
+    await fundermaps.file.http_download(url, FILE_NAME, FILE_MIN_SIZE)
 
     logger.info("Checking BAG file")
     util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
