@@ -32,28 +32,33 @@ class File:
         """
 
         # TODO: Download into a temporary directory
-        dest_dir = os.path.dirname(dest_path)
+        tmp_dir = self.sdk.tmp_directory
+        # print("tmp_dir", tmp_dir)
+
+        file_name = os.path.basename(dest_path)
+        dest_dir = os.path.join(tmp_dir, file_name)
+        # print("dest_dir", dest_dir)
         extension = os.path.basename(dest_path)
 
         # Remove any existing files with the same extension
         util.remove_files(dest_dir, extension=extension)
 
         try:
-            logger.debug(f"Downloading file from {url} to {dest_path}")
+            logger.debug(f"Downloading file from {url} to {dest_dir}")
 
             async with httpx.AsyncClient() as client:
                 async with client.stream("GET", url) as response:
                     response.raise_for_status()
 
-                    with open(dest_path, "wb") as file:
+                    with open(dest_dir, "wb") as file:
                         async for chunk in response.aiter_bytes():
                             file.write(chunk)
 
-            logger.debug(f"File downloaded from {url} to {dest_path}")
+            logger.debug(f"File downloaded from {url} to {dest_dir}")
 
             if min_size > 0:
-                util.validate_file_size(dest_path, min_size)
-                logger.debug(f"File size validated: {dest_path}")
+                util.validate_file_size(dest_dir, min_size)
+                logger.debug(f"File size validated: {dest_dir}")
 
         except Exception as e:
             logger.error(f"Error downloading file: {e}")
@@ -100,8 +105,13 @@ class FunderMapsSDK:
         db_config: DatabaseConfig | None = None,
         s3_config: S3Config | None = None,
         pdf_config: PDFCoConfig | None = None,
+        **kwargs,
     ):
         self.sdk_directory = os.path.dirname(os.path.realpath(__file__))
+        self.current_working_directory = os.getcwd()
+        self.tmp_directory = kwargs.get(
+            "tmp_dir", os.path.join(self.current_working_directory, "tmp")
+        )
 
         self.mail_config = mail_config
         self.db_config = db_config
@@ -112,6 +122,10 @@ class FunderMapsSDK:
             "file": File(self),
         }
         self._logger = logger
+
+        # Create the temporary directory if it does not exist
+        if not os.path.exists(self.tmp_directory):
+            os.makedirs(self.tmp_directory)
 
     def _mail_provider(self):
         if self.mail_config is None:
