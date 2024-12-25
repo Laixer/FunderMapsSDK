@@ -20,9 +20,6 @@ async def run(fundermaps: FunderMapsSDK, args):
     logger.info("Downloading BAG file")
     await fundermaps.file.http_download(url, FILE_NAME, FILE_MIN_SIZE)
 
-    logger.info("Checking BAG file")
-    util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
-
     logger.info("Loading BAG file into database")
     await fundermaps.gdal.to_postgis(FILE_NAME, "lod22_2d")
     await fundermaps.gdal.to_postgis(FILE_NAME, "pand")
