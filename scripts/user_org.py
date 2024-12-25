@@ -4,6 +4,10 @@ from fundermapssdk import FunderMapsSDK, app
 
 logger = logging.getLogger("user_org")
 
+###
+### REMOVE THIS SCRIPT
+###
+
 
 async def add_org(fundermaps: FunderMapsSDK, name: str):
     with fundermaps.db as db:

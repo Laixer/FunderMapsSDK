@@ -40,6 +40,7 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
 
             csv_file = f"{organization}.csv"
 
+            # TODO: Maybe create a CSV writer helper function in the SDK
             column_names = [desc[0] for desc in cur.description]
 
             logger.info(f"Writing data to {csv_file}")
@@ -70,5 +71,6 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
 
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK, args):
+    # TODO: Fetch the organization IDs from the database
     for organization in ORGANIZATIONS:
         await process_export(fundermaps, organization)

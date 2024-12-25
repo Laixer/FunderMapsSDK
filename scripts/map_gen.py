@@ -52,6 +52,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
         f"{tileset.tileset}.geojson",
     )
 
+    # TODO: Add tippecanoe to the SDK
     logger.info(f"Generating tileset '{tileset.tileset}'")
     await tippecanoe(
         f"{tileset.tileset}.geojson",
@@ -75,6 +76,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
                 tile_files.append(local_path)
 
         def upload_file(local_path):
+            # TODO: Make this a method in the SDK
             s3.client.upload_file(
                 local_path,
                 BUCKET,
@@ -96,6 +98,7 @@ async def process_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
     util.remove_files(".", extension=".geojson")
     util.remove_files(".", extension=".mbtiles")
 
+    # TODO: Add a method to the SDK to remove a directory
     if os.path.isdir(tileset.tileset):
         shutil.rmtree(tileset.tileset)
 
@@ -109,6 +112,7 @@ async def run(fundermaps: FunderMapsSDK, args: list[str]):
                 logger.info(f"Processing tileset '{tileset.tileset}'")
                 await process_tileset(fundermaps, tileset)
     else:
+        # TODO: Fetch the tileset names from the database
         for tileset in BUNDLES:
             logger.info(f"Processing tileset '{tileset.tileset}'")
             await process_tileset(fundermaps, tileset)

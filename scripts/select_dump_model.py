@@ -13,7 +13,13 @@ logger = logging.getLogger("analysis_full")
 
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK, args):
-    file_path = "/home/yorick/Downloads/SAM_2024_03.csv"
+    if len(args) < 1:
+        logger.error("Missing file path argument")
+        return
+
+    # file_path = "/home/yorick/Downloads/SAM_2024_03.csv"
+    file_path = args[0]
+
     with open(file_path, "r") as file:
         reader = csv.reader(file)
 
