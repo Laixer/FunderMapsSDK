@@ -33,14 +33,11 @@ class File:
 
         # TODO: Download into a temporary directory
         tmp_dir = self.sdk.tmp_directory
-        # print("tmp_dir", tmp_dir)
 
         file_name = os.path.basename(dest_path)
         dest_dir = os.path.join(tmp_dir, file_name)
-        # print("dest_dir", dest_dir)
         extension = os.path.basename(dest_path)
 
-        # Remove any existing files with the same extension
         util.remove_files(dest_dir, extension=extension)
 
         try:
@@ -63,7 +60,6 @@ class File:
         except Exception as e:
             logger.error(f"Error downloading file: {e}")
 
-            # Remove the file if it was created
             util.remove_files(dest_dir, extension=extension)
 
             raise
@@ -123,7 +119,6 @@ class FunderMapsSDK:
         }
         self._logger = logger
 
-        # Create the temporary directory if it does not exist
         if not os.path.exists(self.tmp_directory):
             os.makedirs(self.tmp_directory)
 
