@@ -4,7 +4,7 @@ from datetime import datetime
 
 from fundermapssdk import FunderMapsSDK, util, app
 
-
+# TODO: Get from the database
 BUCKET: str = "fundermaps"
 ORGANIZATIONS: list[str] = [
     "5c2c5822-6996-4306-96ba-6635ea7f90e2",

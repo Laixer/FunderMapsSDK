@@ -17,6 +17,7 @@ class TileBundle:
         return f"{self.name} ({self.tileset})"
 
 
+# TODO: Get from the database
 BUCKET: str = "fundermaps-tileset"
 BUNDLES: list[TileBundle] = [
     TileBundle("analysis_foundation", 12, 16),

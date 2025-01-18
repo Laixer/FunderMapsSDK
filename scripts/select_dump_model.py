@@ -1,7 +1,7 @@
 import csv
 import logging
 
-from fundermapssdk import FunderMapsSDK, util, app
+from fundermapssdk import FunderMapsSDK, app
 
 
 BUCKET: str = "fundermaps"

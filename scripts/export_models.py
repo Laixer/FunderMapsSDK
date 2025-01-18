@@ -3,6 +3,7 @@ import logging
 from fundermapssdk import FunderMapsSDK, util, app
 
 
+# TODO: Het from database
 BUCKET: str = "fundermaps"
 LAYERS: list[str] = [
     "maplayer.analysis_full",

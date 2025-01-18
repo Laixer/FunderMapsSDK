@@ -4,9 +4,9 @@ from fundermapssdk import FunderMapsSDK
 from fundermapssdk import util, app
 
 
-BASE_URL_CBS: str = (
-    "https://service.pdok.nl/cbs/wijkenbuurten/2023/atom/downloads/wijkenbuurten_2023_v1.gpkg"
-)
+# BASE_URL_CBS: str = (
+#     "https://service.pdok.nl/cbs/wijkenbuurten/2023/atom/downloads/wijkenbuurten_2023_v1.gpkg"
+# )
 FILE_NAME: str = "wijkenbuurten_2023_v1.gpkg"
 FILE_MIN_SIZE: int = 1024 * 1024
 
@@ -23,8 +23,14 @@ async def clean_db(fundermaps: FunderMapsSDK):
 
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK, args):
+    if len(args) < 1:
+        logger.error("Missing URL argument")
+        return
+
+    url = args[0]
+
     logger.info("Downloading CBS file")
-    await util.http_download_file(BASE_URL_CBS, FILE_NAME)
+    await util.http_download_file(url, FILE_NAME)
 
     logger.info("Checking CBS file")
     util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
