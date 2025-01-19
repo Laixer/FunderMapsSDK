@@ -30,7 +30,7 @@ async def run(fundermaps: FunderMapsSDK, args):
     url = args[0]
 
     logger.info("Downloading CBS file")
-    await util.http_download_file(url, FILE_NAME)
+    await fundermaps.file.http_download(url, FILE_NAME, FILE_MIN_SIZE)
 
     logger.info("Checking CBS file")
     util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
