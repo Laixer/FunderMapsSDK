@@ -2,32 +2,33 @@ import os
 import gzip
 import glob
 import shutil
+import httpx
 
 from configparser import ConfigParser
 
 
-# async def http_download_file(url, dest_path):
-#     """
-#     Downloads a file from the given URL and saves it to the specified destination path.
+async def http_download_file(url, dest_path):
+    """
+    Downloads a file from the given URL and saves it to the specified destination path.
 
-#     Args:
-#         url (str): The URL of the file to download.
-#         dest_path (str): The destination path where the downloaded file will be saved.
+    Args:
+        url (str): The URL of the file to download.
+        dest_path (str): The destination path where the downloaded file will be saved.
 
-#     Raises:
-#         httpx.HTTPError: If there is an error during the HTTP request.
+    Raises:
+        httpx.HTTPError: If there is an error during the HTTP request.
 
-#     """
+    """
 
-#     if os.path.exists(dest_path):
-#         os.remove(dest_path)
+    if os.path.exists(dest_path):
+        os.remove(dest_path)
 
-#     async with httpx.AsyncClient() as client:
-#         async with client.stream("GET", url) as response:
-#             response.raise_for_status()
-#             with open(dest_path, "wb") as file:
-#                 async for chunk in response.aiter_bytes():
-#                     file.write(chunk)
+    async with httpx.AsyncClient() as client:
+        async with client.stream("GET", url) as response:
+            response.raise_for_status()
+            with open(dest_path, "wb") as file:
+                async for chunk in response.aiter_bytes():
+                    file.write(chunk)
 
 
 def remove_files(directory, extension=".gpkg"):

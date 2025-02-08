@@ -5,64 +5,10 @@ import httpx
 from fundermapssdk import util
 from fundermapssdk.db import DbProvider
 from fundermapssdk.gdal import GDALProvider
-from fundermapssdk.mail import MailProvider
-from fundermapssdk.config import DatabaseConfig, MailConfig, S3Config, PDFCoConfig
-from fundermapssdk.pdf import PDFProvider
+from fundermapssdk.config import DatabaseConfig, S3Config, PDFCoConfig
 from fundermapssdk.storage import ObjectStorageProvider
 
 logger = logging.getLogger(__name__)
-
-
-class File:
-    def __init__(self, sdk):
-        self.sdk = sdk
-
-    # TODO: Find some temporary directory to download the file
-    async def http_download(self, url, dest_path, min_size=0):
-        """
-        Downloads a file from the given URL and saves it to the specified destination path.
-
-        Args:
-            url (str): The URL of the file to download.
-            dest_path (str): The destination path where the downloaded file will be saved.
-
-        Raises:
-            httpx.HTTPError: If there is an error during the HTTP request.
-
-        """
-
-        # TODO: Download into a temporary directory
-        tmp_dir = self.sdk.tmp_directory
-
-        file_name = os.path.basename(dest_path)
-        dest_dir = os.path.join(tmp_dir, file_name)
-        extension = os.path.basename(dest_path)
-
-        util.remove_files(dest_dir, extension=extension)
-
-        try:
-            logger.debug(f"Downloading file from {url} to {dest_dir}")
-
-            async with httpx.AsyncClient() as client:
-                async with client.stream("GET", url) as response:
-                    response.raise_for_status()
-
-                    with open(dest_dir, "wb") as file:
-                        async for chunk in response.aiter_bytes():
-                            file.write(chunk)
-
-            logger.debug(f"File downloaded from {url} to {dest_dir}")
-
-            if min_size > 0:
-                util.validate_file_size(dest_dir, min_size)
-                logger.debug(f"File size validated: {dest_dir}")
-
-        except Exception as e:
-            logger.error(f"Error downloading file: {e}")
-
-            util.remove_files(dest_dir, extension=extension)
-
-            raise
 
 
 class FunderMapsSDK:
@@ -77,62 +23,31 @@ class FunderMapsSDK:
         __init__(mail_config: MailConfig | None = None, db_config: DatabaseConfig | None = None):
             Initializes a new instance of the FunderMapsSDK class.
 
-        _mail_provider() -> MailProvider:
-            Returns the mail service provider.
-
-        _db_provider() -> DbProvider:
-            Returns the database service provider.
-
-        mail -> MailProvider:
-            Property that returns the mail service provider.
-
         db -> DbProvider:
             Property that returns the database service provider.
     """
 
-    mail_config: MailConfig | None
     db_config: DatabaseConfig | None
     s3_config: S3Config | None
     pdf_config: PDFCoConfig | None
 
     def __init__(
         self,
-        mail_config: MailConfig | None = None,
         db_config: DatabaseConfig | None = None,
         s3_config: S3Config | None = None,
         pdf_config: PDFCoConfig | None = None,
         **kwargs,
     ):
         self.sdk_directory = os.path.dirname(os.path.realpath(__file__))
-        self.working_directory = os.getcwd()
-        self.tmp_directory = kwargs.get(
-            "tmp_dir", os.path.join(self.working_directory, "tmp")
-        )
 
-        self.mail_config = mail_config
         self.db_config = db_config
         self.s3_config = s3_config
         self.pdf_config = pdf_config
 
-        self._service_providers = {
-            "file": File(self),
-        }
+        self._service_providers = {}
         self._logger = logger
 
-        if not os.path.exists(self.tmp_directory):
-            os.makedirs(self.tmp_directory)
-
-    def _mail_provider(self):
-        if self.mail_config is None:
-            raise ValueError("Mail configuration is not set")
-
-        if "mail" not in self._service_providers:
-            self._service_providers["mail"] = MailProvider(self, self.mail_config)
-            self._logger.debug("Mail provider initialized")
-
-        return self._service_providers["mail"]
-
-    def _db_provider(self):
+    def _db_provider(self) -> DbProvider:
         if self.db_config is None:
             raise ValueError("Database configuration is not set")
 
@@ -162,23 +77,15 @@ class FunderMapsSDK:
 
         return self._service_providers["s3"]
 
-    def _pdf_provider(self):
-        if self.pdf_config is None:
-            raise ValueError("PDF configuration is not set")
+    # def _pdf_provider(self):
+    #     if self.pdf_config is None:
+    #         raise ValueError("PDF configuration is not set")
 
-        if "pdf" not in self._service_providers:
-            self._service_providers["pdf"] = PDFProvider(self, self.pdf_config)
-            self._logger.debug("PDF provider initialized")
+    #     if "pdf" not in self._service_providers:
+    #         self._service_providers["pdf"] = PDFProvider(self, self.pdf_config)
+    #         self._logger.debug("PDF provider initialized")
 
-        return self._service_providers["pdf"]
-
-    @property
-    def file(self):
-        return self._service_providers["file"]
-
-    @property
-    def mail(self):
-        return self._mail_provider()
+    #     return self._service_providers["pdf"]
 
     @property
     def db(self):
@@ -192,6 +99,6 @@ class FunderMapsSDK:
     def s3(self):
         return self._s3_provider()
 
-    @property
-    def pdf(self):
-        return self._pdf_provider()
+    # @property
+    # def pdf(self):
+    #     return self._pdf_provider()
