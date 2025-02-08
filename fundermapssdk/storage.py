@@ -1,6 +1,7 @@
 import boto3
 import logging
-from boto3.s3.transfer import TransferConfig
+from typing import Any
+from boto3.s3.transfer import TransferConfig, TransferManager
 
 from fundermapssdk.config import S3Config
 
@@ -11,7 +12,7 @@ class ObjectStorageProvider:
         self.config = config
         self.client = None
 
-    async def upload_file(self, bucket, file_path: str, key: str, *args):
+    def upload_file(self, file_path: str, key: str, *args):
         """
         Uploads a file to the specified key in the storage bucket.
 
@@ -29,47 +30,20 @@ class ObjectStorageProvider:
         """
         self.__logger(logging.DEBUG, f"Uploading file {file_path} to {key}")
 
-        config = TransferConfig(
-            multipart_threshold=1024 * 25,
-            max_concurrency=10,
-            multipart_chunksize=1024 * 25,
-            use_threads=True,
-        )
-
-        self.client.upload_file(file_path, bucket, key, *args, Config=config)
+        self.client.upload_file(file_path, self.config.bucket, key, *args)
 
         self.__logger(logging.DEBUG, f"File uploaded to {key}")
 
-    async def upload_file2(self, file_path: str, key: str, *args):
-        """
-        Uploads a file to the specified key in the storage bucket.
+    def upload_bulk(self, file_paths: str, extra_args: Any | None = None):
+        transfer_manager = TransferManager(self.client)
 
-        Args:
-            bucket (str): The name of the bucket to upload the file to.
-            file_path (str): The path of the file to be uploaded.
-            key (str): The key under which to store the file in the bucket.
-            *args: Additional arguments to be passed to the upload_file method.
-
-        Returns:
-            None
-
-        Raises:
-            None
-        """
-        self.__logger(logging.DEBUG, f"Uploading file {file_path} to {key}")
-
-        config = TransferConfig(
-            multipart_threshold=1024 * 25,
-            max_concurrency=10,
-            multipart_chunksize=1024 * 25,
-            use_threads=True,
-        )
-
-        self.client.upload_file(
-            file_path, self.config.bucket, key, *args, Config=config
-        )
-
-        self.__logger(logging.DEBUG, f"File uploaded to {key}")
+        for file_path in file_paths:
+            transfer_manager.upload(
+                file_path,
+                self.config.bucket,
+                file_path,
+                extra_args=extra_args,
+            )
 
     def __enter__(self):
         self.__logger(logging.DEBUG, "Connecting to S3")
