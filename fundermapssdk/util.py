@@ -31,7 +31,8 @@ async def http_download_file(url, dest_path):
                     file.write(chunk)
 
 
-def remove_files(directory, extension=".gpkg"):
+# TODO: Maybe we do not need this function
+def remove_files(directory, extension):
     """
     Remove files with a specific extension from a directory.
 
@@ -44,6 +45,31 @@ def remove_files(directory, extension=".gpkg"):
 
     for file_path in files:
         os.remove(file_path)
+
+
+def collect_files_with_extension(directory, extension) -> list:
+    """
+    Collects files with a specific extension from a directory.
+
+    Args:
+        directory (str): The directory to search for files.
+        extension (str): The extension of the files to collect.
+
+    Returns:
+        list: A list of file paths with the specified extension.
+    """
+    collected_files = []
+
+    for root, _, files in os.walk(directory):
+        for filename in files:
+            file_ext = os.path.splitext(filename)[1]
+            if file_ext != extension:
+                continue
+
+            local_path = os.path.join(root, filename)
+            collected_files.append(local_path)
+
+    return collected_files
 
 
 # TODO: pass path suggestion as argument

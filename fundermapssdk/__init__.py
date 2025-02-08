@@ -1,8 +1,7 @@
 import os
 import logging
-import httpx
 
-from fundermapssdk import util
+
 from fundermapssdk.db import DbProvider
 from fundermapssdk.gdal import GDALProvider
 from fundermapssdk.config import DatabaseConfig, S3Config, PDFCoConfig
