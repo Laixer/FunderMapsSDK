@@ -4,17 +4,13 @@ from prefect.cache_policies import NO_CACHE
 from fundermapssdk import FunderMapsSDK
 
 
-@task(name="Refresh Buildings", cache_policy=NO_CACHE)
-def db_refresh_buildings(fundermaps: FunderMapsSDK):
+@task(name="Calculate Risk", cache_policy=NO_CACHE)
+def db_calculate_risk(fundermaps: FunderMapsSDK):
     with fundermaps.db as db:
         db.refresh_materialized_view("data.building_sample")
         db.refresh_materialized_view("data.cluster_sample")
         db.refresh_materialized_view("data.supercluster_sample")
 
-
-@task(name="Calculate Risk", cache_policy=NO_CACHE)
-def db_calculate_risk(fundermaps: FunderMapsSDK):
-    with fundermaps.db as db:
         db.call("data.model_risk_manifest")
         db.reindex_table("data.model_risk_static")
 

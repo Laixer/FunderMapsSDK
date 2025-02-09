@@ -44,7 +44,7 @@ class FunderMapsSDK:
         self.pdf_config = pdf_config
 
         self._service_providers = {}
-        self._logger = logger
+        self._logger = kwargs.get("logger", logger)
 
     def _db_provider(self) -> DbProvider:
         if self.db_config is None:

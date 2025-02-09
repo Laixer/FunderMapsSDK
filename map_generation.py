@@ -77,7 +77,6 @@ async def generate_tileset(fundermaps: FunderMapsSDK, tileset: TileBundle):
         f"{tileset.tileset}.geojson",
     )
 
-    # TODO: Add tippecanoe to the SDK
     logger.info(f"Generating tileset '{tileset.tileset}'")
     await tippecanoe(
         f"{tileset.tileset}.geojson",

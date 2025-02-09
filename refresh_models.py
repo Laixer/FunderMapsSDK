@@ -25,7 +25,6 @@ def refresh():
 
     fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
 
-    db_refresh_buildings(fundermaps)
     db_calculate_risk(fundermaps)
     db_refresh_statistics(fundermaps)
 

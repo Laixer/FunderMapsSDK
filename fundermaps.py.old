@@ -7,7 +7,7 @@ import logging
 import colorlog
 import argparse
 import importlib.util
-from systemd import journal
+# from systemd import journal
 
 from fundermapssdk import util, app
 
@@ -44,12 +44,12 @@ parser.add_argument("args", nargs=argparse.REMAINDER)
 
 args = parser.parse_args()
 
-if args.systemd:
-    handler = journal.JournalHandler(SYSLOG_IDENTIFIER=args.script)
-else:
-    handler = colorlog.StreamHandler()
-    color_format = "%(log_color)s%(levelname)-8s %(name)s%(reset)s %(message)s"
-    handler.setFormatter(colorlog.ColoredFormatter(color_format))
+# if args.systemd:
+    # handler = journal.JournalHandler(SYSLOG_IDENTIFIER=args.script)
+# else:
+handler = colorlog.StreamHandler()
+color_format = "%(log_color)s%(levelname)-8s %(name)s%(reset)s %(message)s"
+handler.setFormatter(colorlog.ColoredFormatter(color_format))
 
 logging.basicConfig(level=args.log_level, handlers=[handler], format="%(message)s")
 
