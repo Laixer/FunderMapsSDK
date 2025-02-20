@@ -2,6 +2,7 @@ from prefect import flow
 
 
 SOURCE_REPO = "git@github.com:Laixer/FunderMapsSDK.git"
+WORK_POOL_NAME = "fm-worker-1"
 
 if __name__ == "__main__":
     flow.from_source(
@@ -10,8 +11,8 @@ if __name__ == "__main__":
     ).deploy(
         name="Export Product",
         parameters={},
-        work_pool_name="fm-worker-1",
-        cron="0 * * * *",  # Run every hour
+        work_pool_name=WORK_POOL_NAME,
+        cron="0 * * * *",
     )
 
     flow.from_source(
@@ -20,6 +21,14 @@ if __name__ == "__main__":
     ).deploy(
         name="Database Models Update",
         parameters={},
-        work_pool_name="fm-worker-1",
+        work_pool_name=WORK_POOL_NAME,
         cron="05 23 * * *",
+    )
+
+    flow.from_source(
+        source=SOURCE_REPO,
+        entrypoint="load_dataset.py:load_dataset",
+    ).deploy(
+        name="Load Dataset",
+        work_pool_name=WORK_POOL_NAME,
     )
