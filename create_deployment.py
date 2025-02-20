@@ -13,6 +13,7 @@ if __name__ == "__main__":
         parameters={},
         work_pool_name=WORK_POOL_NAME,
         cron="55 * * * *",
+        print_next_steps=False,
     )
 
     flow.from_source(
@@ -22,7 +23,8 @@ if __name__ == "__main__":
         name="Database Models Update",
         parameters={},
         work_pool_name=WORK_POOL_NAME,
-        cron="05 23 * * *",
+        cron="05 20 * * *",
+        print_next_steps=False,
     )
 
     flow.from_source(
@@ -31,4 +33,5 @@ if __name__ == "__main__":
     ).deploy(
         name="Load Dataset",
         work_pool_name=WORK_POOL_NAME,
+        print_next_steps=False,
     )
