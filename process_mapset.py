@@ -97,8 +97,8 @@ def upload_dataset(fundermaps: FunderMapsSDK, tileset: TileBundle):
         s3.upload_file(f"{tileset.tileset}.gpkg", s3_path)
 
 
-@flow(name="Map Generation")
-async def map_generation():
+@flow(name="Process Mapset")
+async def process_mapset():
     db_config = DatabaseConfig(
         database="fundermaps",
         host="db-pg-ams3-0-do-user-871803-0.b.db.ondigitalocean.com",
@@ -147,4 +147,4 @@ async def map_generation():
 
 
 if __name__ == "__main__":
-    asyncio.run(map_generation())
+    asyncio.run(process_mapset())
