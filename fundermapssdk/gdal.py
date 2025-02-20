@@ -45,6 +45,8 @@ class GDALProvider:
             driver = "GPKG"
         elif output.endswith(".geojson"):
             driver = "GeoJSONSeq"
+        else:
+            raise ValueError("Unsupported output format")
 
         cmd_args = ["-overwrite"]
 
