@@ -10,17 +10,6 @@ FILE_MIN_SIZE: int = 1024 * 1024 * 1024
 logger = logging.getLogger("loadbag")
 
 
-async def clean_db(fundermaps: FunderMapsSDK):
-    with fundermaps.db as db:
-        db.drop_table("public.woonplaats")
-        db.drop_table("public.verblijfsobject")
-        db.drop_table("public.pand")
-        db.drop_table("public.ligplaats")
-        db.drop_table("public.standplaats")
-        db.drop_table("public.openbare_ruimte")
-        db.drop_table("public.nummeraanduiding")
-
-
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK, args):
     if len(args) < 1:
@@ -34,9 +23,6 @@ async def run(fundermaps: FunderMapsSDK, args):
 
     logger.info("Checking BAG file")
     util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
-
-    logger.info("Cleaning database")
-    await clean_db(fundermaps)
 
     logger.info("Loading BAG file into database")
     await fundermaps.gdal.to_postgis(FILE_NAME)

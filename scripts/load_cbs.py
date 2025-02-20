@@ -13,14 +13,6 @@ FILE_MIN_SIZE: int = 1024 * 1024
 logger = logging.getLogger("loadcbs")
 
 
-async def clean_db(fundermaps: FunderMapsSDK):
-    with fundermaps.db as db:
-        logger.info("Removing previous data")
-        db.drop_table("public.wijken")
-        db.drop_table("public.buurten")
-        db.drop_table("public.gemeenten")
-
-
 @app.fundermaps_task
 async def run(fundermaps: FunderMapsSDK, args):
     if len(args) < 1:
@@ -34,9 +26,6 @@ async def run(fundermaps: FunderMapsSDK, args):
 
     logger.info("Checking CBS file")
     util.validate_file_size(FILE_NAME, FILE_MIN_SIZE)
-
-    logger.info("Cleaning database")
-    await clean_db(fundermaps)
 
     logger.info("Loading CBS file into database")
     await fundermaps.gdal.to_postgis(FILE_NAME)
