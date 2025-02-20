@@ -93,6 +93,7 @@ def upload_dataset(fundermaps: FunderMapsSDK, tileset: TileBundle):
 
     with fundermaps.s3 as s3:
         logger.info(f"Uploading {tileset.tileset} to S3")
+
         s3_path = f"model/{util.date_path()}/{tileset.tileset}.gpkg"
         s3.upload_file(f"{tileset.tileset}.gpkg", s3_path)
 

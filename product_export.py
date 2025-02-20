@@ -1,11 +1,14 @@
+import os
 import csv
 import asyncio
+import tempfile
 from datetime import datetime
 
 from prefect import flow, task
 from prefect.logging import get_run_logger
+from prefect.cache_policies import NO_CACHE
 
-from fundermapssdk import FunderMapsSDK, util
+from fundermapssdk import FunderMapsSDK
 from fundermapssdk.config import DatabaseConfig, S3Config
 
 # TODO: Get from the database
@@ -20,7 +23,11 @@ ORGANIZATIONS: list[str] = [
 ]
 
 
-@task(name="Process Export", description="Process product tracker data export")
+@task(
+    name="Process Export",
+    description="Process product tracker data export",
+    cache_policy=NO_CACHE,
+)
 async def process_export(fundermaps: FunderMapsSDK, organization: str):
     logger = get_run_logger()
     logger.info("Exporting product tracker data")
@@ -59,8 +66,6 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
                     writer.writerow(row)
                     data_written = True
 
-    util.compress_file(csv_file, f"{csv_file}.gz")
-
     if data_written:
         with fundermaps.s3 as s3:
             current_date = datetime.now()
@@ -68,8 +73,9 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
             formatted_date_month = current_date.strftime("%b").lower()
 
             logger.info(f"Uploading {csv_file} to S3")
-            s3_path = f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv.gz"
-            await s3.upload_file(f"{csv_file}.gz", s3_path)
+
+            s3_path = f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv"
+            s3.upload_file(csv_file, s3_path)
     else:
         logger.info("No data to export")
 
@@ -91,11 +97,18 @@ async def export_product():
         service_uri="https://ams3.digitaloceanspaces.com",
     )
 
+    logger = get_run_logger()
+
     fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
 
     # TODO: Fetch the organization IDs from the database
     for organization in ORGANIZATIONS:
-        await process_export(fundermaps, organization)
+        logger.info(f"Processing organization: {organization}")
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
+            os.chdir(tmp_dir)
+
+            await process_export(fundermaps, organization)
 
 
 if __name__ == "__main__":
