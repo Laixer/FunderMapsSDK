@@ -9,18 +9,13 @@ from prefect.logging import get_run_logger
 from fundermapssdk import FunderMapsSDK, util
 from fundermapssdk.config import DatabaseConfig, S3Config
 
-# FILE_NAME: str = "/home/eve/gouda.gpkg"
-# FILE_NAME: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
-# FILE_NAME: str = "https://service.pdok.nl/cbs/wijkenbuurten/2023/atom/downloads/wijkenbuurten_2023_v1.gpkg"
-# FILE_NAME: str = (
-#     "https://service.pdok.nl/cbs/wijkenbuurten/2024/atom/downloads/wijkenbuurten_2024.gpkg"
-# )
-FILE_NAME: str = "s3://import/gouda.gpkg"
 FILE_MIN_SIZE: int = 1024 * 512  # 512 KB
 
 
 @flow(name="Load Dataset")
-async def load_dataset():
+async def load_dataset(
+    dataset_input: str, dataset_layer: list[str] = [], delete_dataset: bool = False
+):
     db_config = DatabaseConfig(
         database="fundermaps",
         host="db-pg-ams3-0-do-user-871803-0.b.db.ondigitalocean.com",
@@ -43,10 +38,7 @@ async def load_dataset():
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
         os.chdir(tmp_dir)
 
-        dataset_input = FILE_NAME
         dataset_path = dataset_input
-        # layer_name = ["buildings"]
-        layer_name = []
 
         if dataset_input.startswith("https://"):
             file_name = dataset_input.split("/")[-1]
@@ -64,12 +56,25 @@ async def load_dataset():
             with fundermaps.s3 as s3:
                 s3.download_file(file_name, s3_path)
 
+        # TODO: Replace with file extension check
         logger.info("Validating dataset")
         util.validate_file_size(dataset_path, FILE_MIN_SIZE)
 
         logger.info("Loading dataset into database")
-        await fundermaps.gdal.to_postgis(dataset_path, *layer_name)
+        await fundermaps.gdal.to_postgis(dataset_path, *dataset_layer)
+
+        if delete_dataset and dataset_input.startswith("s3://"):
+            logger.info("Deleting dataset")
+            # TODO: Delete the file from S3
+            pass
 
 
 if __name__ == "__main__":
-    asyncio.run(load_dataset())
+    # FILE_NAME: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
+    # FILE_NAME: str = (
+    #     "https://service.pdok.nl/cbs/wijkenbuurten/2024/atom/downloads/wijkenbuurten_2024.gpkg"
+    # )
+    # asyncio.run(load_dataset(FILE_NAME))
+
+    FILE_NAME: str = "s3://import/gouda.gpkg"
+    asyncio.run(load_dataset(FILE_NAME, ["buildings"], True))
