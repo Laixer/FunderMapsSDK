@@ -77,7 +77,7 @@ class GDALProvider:
                 logging.DEBUG, f"Command succeeded: {stdout.decode().strip()}"
             )
         else:
-            self.__logger(logging.ERROR, f"Command failed: {stderr.decode().strip()}")
+            raise Exception(f"Command failed: {stderr.decode().strip()}")
 
         return process.returncode == 0
 
