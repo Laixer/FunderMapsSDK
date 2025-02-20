@@ -10,6 +10,18 @@ class GDALProvider:
         self._sdk = sdk
         self.config = config
 
+    async def version(self) -> tuple[int, int, int]:
+        process = await asyncio.create_subprocess_exec(
+            "ogr2ogr", "--version", stdout=asyncio.subprocess.PIPE
+        )
+
+        stdout, _ = await process.communicate()
+        version_output = stdout.decode().strip()
+        version_number = version_output.split()[1].strip(",")
+
+        major, minor, patch = map(int, version_number.split("."))
+        return major, minor, patch
+
     def _pg_connection_string(self) -> str:
         return f"PG:dbname='{self.config.database}' host='{self.config.host}' port='{self.config.port}' user='{self.config.user}' password='{self.config.password}'"
 
@@ -34,8 +46,21 @@ class GDALProvider:
         elif output.endswith(".geojson"):
             driver = "GeoJSONSeq"
 
+        cmd_args = ["-overwrite"]
+
+        gdal_version = await self.version()
+        if gdal_version > (3, 8, 0) and gdal_version < (3, 9, 0):
+            cmd_args.extend(
+                [
+                    "--config",
+                    "OGR2OGR_USE_ARROW_API",
+                    "NO",
+                ]
+            )
+
         process = await asyncio.create_subprocess_exec(
             "ogr2ogr",
+            *cmd_args,
             "-f",
             driver,
             output,
