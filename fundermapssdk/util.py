@@ -6,6 +6,9 @@ import httpx
 
 from configparser import ConfigParser
 
+FILE_ALLOWED_EXTENSIONS = ["geojson", "gpkg", "shp", "zip", "csv"]
+FILE_MIN_SIZE: int = 1024  # 1 KB
+
 
 async def http_download_file(url, dest_path):
     """
@@ -119,6 +122,24 @@ def validate_file_size(file_path, min_size):
 
     if os.path.getsize(file_path) < min_size:
         raise ValueError("File is below the minimum")
+
+
+def validate_file_extension(file_path, allowed_extensions):
+    """
+    Validates the extension of a file.
+
+    Args:
+        file_path (str): The path to the file.
+        allowed_extensions (list): A list of allowed extensions.
+
+    Raises:
+        ValueError: If the file extension is not in the allowed extensions list.
+    """
+
+    file_extension = os.path.splitext(file_path)[1]
+
+    if file_extension not in allowed_extensions:
+        raise ValueError("File extension is not allowed")
 
 
 def date_path(with_month=True, with_day=True):
