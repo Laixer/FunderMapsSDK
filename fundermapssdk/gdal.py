@@ -39,6 +39,9 @@ class GDALProvider:
         if is_file and not os.path.exists(input):
             raise FileNotFoundError("File not found")
 
+        if os.path.splitext(input)[1] == ".zip":
+            input = f"/vsizip/{input}"
+
         if output.startswith("PG:"):
             driver = "PostgreSQL"
         elif output.endswith(".gpkg"):
