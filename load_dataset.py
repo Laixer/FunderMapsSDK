@@ -16,7 +16,8 @@ async def load_dataset(
 ):
     db_config = DatabaseConfig(
         database="fundermaps",
-        host="db-pg-ams3-0-do-user-871803-0.b.db.ondigitalocean.com",
+        # host="db-pg-ams3-0-do-user-871803-0.b.db.ondigitalocean.com",
+        host="private-db-pg-ams3-0-do-user-871803-0.b.db.ondigitalocean.com",
         user="fundermaps",
         password="AVNS_CtcfLEuVWqRXiK__gKt",
         port=25060,

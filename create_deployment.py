@@ -12,7 +12,7 @@ if __name__ == "__main__":
         name="Export Product",
         parameters={},
         work_pool_name=WORK_POOL_NAME,
-        cron="0 * * * *",
+        cron="55 * * * *",
     )
 
     flow.from_source(
