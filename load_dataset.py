@@ -74,5 +74,9 @@ if __name__ == "__main__":
     # )
     # asyncio.run(load_dataset(FILE_NAME))
 
-    FILE_NAME: str = "s3://import/gouda.gpkg"
-    asyncio.run(load_dataset(FILE_NAME, ["buildings"], True))
+    FILE_NAME: str = "https://data.3dbag.nl/v20241216/3dbag_nl.gpkg.zip"
+    # FILE_NAME: str = "3dbag_nl.gpkg.zip"
+    asyncio.run(load_dataset(FILE_NAME, ["lod22_2d", "pand"]))
+
+    # FILE_NAME: str = "s3://import/gouda.gpkg"
+    # asyncio.run(load_dataset(FILE_NAME, ["buildings"], True))
