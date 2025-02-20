@@ -25,6 +25,7 @@ if __name__ == "__main__":
         work_pool_name=WORK_POOL_NAME,
         cron="05 20 * * *",
         print_next_steps=False,
+        concurrency_limit=1,
     )
 
     flow.from_source(

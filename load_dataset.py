@@ -1,6 +1,6 @@
-import os
+# import os
 import asyncio
-import tempfile
+# import tempfile
 
 
 from prefect import flow
@@ -34,38 +34,38 @@ async def load_dataset(
 
     fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
 
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
-        os.chdir(tmp_dir)
+    # with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
+    #     os.chdir(tmp_dir)
 
-        dataset_path = dataset_input
+    dataset_path = dataset_input
 
-        if dataset_input.startswith("https://"):
-            file_name = dataset_input.split("/")[-1]
-            dataset_path = file_name
+    if dataset_input.startswith("https://"):
+        file_name = dataset_input.split("/")[-1]
+        dataset_path = file_name
 
-            logger.info(f"Downloading dataset from URL '{dataset_input}'")
-            await util.http_download_file(dataset_input, file_name)
+        logger.info(f"Downloading dataset from URL '{dataset_input}'")
+        await util.http_download_file(dataset_input, file_name)
 
-        elif dataset_input.startswith("s3://"):
-            file_name = dataset_input.split("/")[-1]
-            dataset_path = file_name
-            s3_path = dataset_input.replace(f"s3://", "")
+    elif dataset_input.startswith("s3://"):
+        file_name = dataset_input.split("/")[-1]
+        dataset_path = file_name
+        s3_path = dataset_input.replace(f"s3://", "")
 
-            logger.info(f"Downloading dataset from S3 '{dataset_input}'")
-            with fundermaps.s3 as s3:
-                s3.download_file(file_name, s3_path)
+        logger.info(f"Downloading dataset from S3 '{dataset_input}'")
+        with fundermaps.s3 as s3:
+            s3.download_file(file_name, s3_path)
 
-        logger.info(f"Validating dataset: {dataset_path}")
-        util.validate_file_size(dataset_path, util.FILE_MIN_SIZE)
-        util.validate_file_extension(dataset_path, util.FILE_ALLOWED_EXTENSIONS)
+    logger.info(f"Validating dataset: {dataset_path}")
+    util.validate_file_size(dataset_path, util.FILE_MIN_SIZE)
+    util.validate_file_extension(dataset_path, util.FILE_ALLOWED_EXTENSIONS)
 
-        logger.info("Loading dataset into database")
-        await fundermaps.gdal.to_postgis(dataset_path, *dataset_layer)
+    logger.info("Loading dataset into database")
+    await fundermaps.gdal.to_postgis(dataset_path, *dataset_layer)
 
-        if delete_dataset and dataset_input.startswith("s3://"):
-            logger.info(f"Deleting dataset from S3 '{dataset_input}'")
-            # TODO: Delete the file from S3
-            pass
+    if delete_dataset and dataset_input.startswith("s3://"):
+        logger.info(f"Deleting dataset from S3 '{dataset_input}'")
+        # TODO: Delete the file from S3
+        pass
 
 
 if __name__ == "__main__":
