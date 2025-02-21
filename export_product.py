@@ -1,7 +1,5 @@
-import os
 import csv
 import asyncio
-import tempfile
 from datetime import datetime
 
 from prefect import flow, task
@@ -12,7 +10,6 @@ from fundermapssdk import FunderMapsSDK
 from fundermapssdk.config import DatabaseConfig, S3Config
 
 # TODO: Get from the database
-BUCKET: str = "fundermaps"
 ORGANIZATIONS: list[str] = [
     "5c2c5822-6996-4306-96ba-6635ea7f90e2",
     "8a56e920-7811-47b7-9289-758c8fe346db",
@@ -75,12 +72,12 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
             logger.info(f"Uploading {csv_file} to S3")
 
             s3_path = f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv"
-            s3.upload_file(csv_file, s3_path)
+            s3.upload_file(csv_file, s3_path, bucket="fundermaps-data")
     else:
         logger.info("No data to export")
 
 
-@flow(name="Export Product")
+@flow
 async def export_product():
     db_config = DatabaseConfig(
         database="fundermaps",
@@ -106,10 +103,7 @@ async def export_product():
     for organization in ORGANIZATIONS:
         logger.info(f"Processing organization: {organization}")
 
-        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
-            os.chdir(tmp_dir)
-
-            await process_export(fundermaps, organization)
+        await process_export(fundermaps, organization)
 
 
 if __name__ == "__main__":

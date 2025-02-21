@@ -1,6 +1,3 @@
-import asyncio
-
-
 from prefect import flow
 from prefect.logging import get_run_logger
 
@@ -8,7 +5,7 @@ from fundermapssdk import FunderMapsSDK, util
 from fundermapssdk.config import DatabaseConfig, S3Config
 
 
-@flow(name="Load Dataset")
+@flow
 async def load_dataset(
     dataset_input: str, dataset_layer: list[str] = [], delete_dataset: bool = False
 ):
@@ -34,6 +31,7 @@ async def load_dataset(
 
     dataset_path = dataset_input
 
+    # TODO: This is a task
     if dataset_input.startswith("https://"):
         file_name = dataset_input.split("/")[-1]
         dataset_path = file_name
@@ -41,6 +39,7 @@ async def load_dataset(
         logger.info(f"Downloading dataset from URL '{dataset_input}'")
         await util.http_download_file(dataset_input, file_name)
 
+    # TODO: This is a task
     elif dataset_input.startswith("s3://"):
         file_name = dataset_input.split("/")[-1]
         dataset_path = file_name
@@ -63,16 +62,8 @@ async def load_dataset(
         pass
 
 
-if __name__ == "__main__":
-    # FILE_NAME: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
-    # FILE_NAME: str = (
-    #     "https://service.pdok.nl/cbs/wijkenbuurten/2024/atom/downloads/wijkenbuurten_2024.gpkg"
-    # )
-    # asyncio.run(load_dataset(FILE_NAME))
+# if __name__ == "__main__":
+#     import asyncio
 
-    FILE_NAME: str = "https://data.3dbag.nl/v20241216/3dbag_nl.gpkg.zip"
-    # FILE_NAME: str = "3dbag_nl.gpkg.zip"
-    asyncio.run(load_dataset(FILE_NAME, ["lod22_2d", "pand"]))
-
-    # FILE_NAME: str = "s3://import/gouda.gpkg"
-    # asyncio.run(load_dataset(FILE_NAME, ["buildings"], True))
+#     FILE_NAME: str = "s3://import/gouda.gpkg"
+#     asyncio.run(load_dataset(FILE_NAME, ["buildings"], True))

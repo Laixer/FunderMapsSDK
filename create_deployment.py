@@ -11,7 +11,7 @@ if __name__ == "__main__":
         source=SOURCE_REPO,
         entrypoint="export_product.py:export_product",
     ).deploy(
-        name="Export Product",
+        name="export-product",
         work_pool_name=WORK_POOL_NAME,
         cron="0 0 1 * *",  # TODO: Check exactly when to run this flow
         print_next_steps=False,
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         source=SOURCE_REPO,
         entrypoint="load_dataset.py:load_dataset",
     ).deploy(
-        name="Load Dataset",
+        name="load-dataset",
         work_pool_name=WORK_POOL_NAME,
         print_next_steps=False,
     )
