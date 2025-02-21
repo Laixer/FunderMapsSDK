@@ -46,43 +46,43 @@ if __name__ == "__main__":
         print_next_steps=False,
         parameters={
             "tilebundle": [
-                # {
-                #     "tileset": "analysis_foundation",
-                #     "zoom_start": 12,
-                #     "zoom_end": 16,
-                # },
-                # {
-                #     "tileset": "analysis_report",
-                #     "zoom_start": 12,
-                #     "zoom_end": 16,
-                # },
-                # {
-                #     "tileset": "analysis_building",
-                #     "zoom_start": 12,
-                #     "zoom_end": 16,
-                # },
-                # {
-                #     "tileset": "analysis_risk",
-                #     "zoom_start": 12,
-                #     "zoom_end": 16,
-                # },
-                # {
-                #     "tileset": "analysis_monitoring",
-                #     "zoom_start": 12,
-                #     "zoom_end": 16,
-                # },
-                # {
-                #     "tileset": "facade_scan",
-                #     "zoom_start": 12,
-                #     "zoom_end": 16,
-                #     "upload_dataset": True,
-                # },
-                # {
-                #     "tileset": "incident",
-                #     "zoom_start": 12,
-                #     "zoom_end": 16,
-                #     "upload_dataset": True,
-                # },
+                {
+                    "tileset": "analysis_foundation",
+                    "min_zoom": 12,
+                    "max_zoom": 16,
+                },
+                {
+                    "tileset": "analysis_report",
+                    "min_zoom": 12,
+                    "max_zoom": 16,
+                },
+                {
+                    "tileset": "analysis_building",
+                    "min_zoom": 12,
+                    "max_zoom": 16,
+                },
+                {
+                    "tileset": "analysis_risk",
+                    "min_zoom": 12,
+                    "max_zoom": 16,
+                },
+                {
+                    "tileset": "analysis_monitoring",
+                    "min_zoom": 12,
+                    "max_zoom": 16,
+                },
+                {
+                    "tileset": "facade_scan",
+                    "min_zoom": 12,
+                    "max_zoom": 16,
+                    "upload_dataset": True,
+                },
+                {
+                    "tileset": "incident",
+                    "min_zoom": 12,
+                    "max_zoom": 16,
+                    "upload_dataset": True,
+                },
                 {
                     "tileset": "incident_neighborhood",
                     "min_zoom": 10,
@@ -100,6 +100,13 @@ if __name__ == "__main__":
                     "min_zoom": 10,
                     "max_zoom": 16,
                     "upload_dataset": True,
+                },
+                {
+                    "tileset": "analysis_full",
+                    "min_zoom": 10,
+                    "max_zoom": 16,
+                    "upload_dataset": True,
+                    "generate_tiles": False,
                 },
             ]
         },
