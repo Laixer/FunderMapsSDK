@@ -85,20 +85,20 @@ if __name__ == "__main__":
                 # },
                 {
                     "tileset": "incident_neighborhood",
-                    "zoom_start": 10,
-                    "zoom_end": 16,
+                    "min_zoom": 10,
+                    "max_zoom": 16,
                     "upload_dataset": True,
                 },
                 {
                     "tileset": "incident_municipality",
-                    "zoom_start": 7,
-                    "zoom_end": 11,
+                    "min_zoom": 7,
+                    "max_zoom": 11,
                     "upload_dataset": True,
                 },
                 {
                     "tileset": "incident_district",
-                    "zoom_start": 10,
-                    "zoom_end": 16,
+                    "min_zoom": 10,
+                    "max_zoom": 16,
                     "upload_dataset": True,
                 },
             ]
