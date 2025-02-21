@@ -36,3 +36,94 @@ if __name__ == "__main__":
         work_pool_name=WORK_POOL_NAME,
         print_next_steps=False,
     )
+
+    flow.from_source(
+        source=SOURCE_REPO,
+        entrypoint="process_mapset.py:extract_mapset",
+    ).deploy(
+        name="extract-mapset",
+        work_pool_name=WORK_POOL_NAME,
+        print_next_steps=False,
+        parameters={
+            "tilebundle": [
+                # {
+                #     "tileset": "analysis_foundation",
+                #     "zoom_start": 12,
+                #     "zoom_end": 16,
+                # },
+                # {
+                #     "tileset": "analysis_report",
+                #     "zoom_start": 12,
+                #     "zoom_end": 16,
+                # },
+                # {
+                #     "tileset": "analysis_building",
+                #     "zoom_start": 12,
+                #     "zoom_end": 16,
+                # },
+                # {
+                #     "tileset": "analysis_risk",
+                #     "zoom_start": 12,
+                #     "zoom_end": 16,
+                # },
+                # {
+                #     "tileset": "analysis_monitoring",
+                #     "zoom_start": 12,
+                #     "zoom_end": 16,
+                # },
+                # {
+                #     "tileset": "facade_scan",
+                #     "zoom_start": 12,
+                #     "zoom_end": 16,
+                #     "upload_dataset": True,
+                # },
+                # {
+                #     "tileset": "incident",
+                #     "zoom_start": 12,
+                #     "zoom_end": 16,
+                #     "upload_dataset": True,
+                # },
+                {
+                    "tileset": "incident_neighborhood",
+                    "zoom_start": 10,
+                    "zoom_end": 16,
+                    "upload_dataset": True,
+                },
+                {
+                    "tileset": "incident_municipality",
+                    "zoom_start": 7,
+                    "zoom_end": 11,
+                    "upload_dataset": True,
+                },
+                {
+                    "tileset": "incident_district",
+                    "zoom_start": 10,
+                    "zoom_end": 16,
+                    "upload_dataset": True,
+                },
+            ]
+        },
+    )
+
+    # extract_mapset(
+    #     [
+    #         TileBundle("analysis_foundation", 12, 16),
+    #         TileBundle("analysis_report", 12, 16),
+    #         TileBundle("analysis_building", 12, 16),
+    #         TileBundle("analysis_risk", 12, 16),
+    #         TileBundle("analysis_monitoring", 12, 16),
+    #         TileBundle("facade_scan", 12, 16, upload_dataset=True),
+    #         TileBundle("incident", 12, 16, upload_dataset=True),
+    #         TileBundle(
+    #             "incident_neighborhood",
+    #             10,
+    #             16,
+    #             upload_dataset=True,
+    #         ),
+    #         TileBundle("incident_municipality", 7, 11, upload_dataset=True),
+    #         TileBundle("incident_district", 10, 16, upload_dataset=True),
+    #         # TileBundle(
+    #         #     "analysis_full", 10, 16, upload_dataset=True, generate_tiles=False
+    #         # ),
+    #     ]
+    # )
