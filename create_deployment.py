@@ -51,6 +51,7 @@ if __name__ == "__main__":
         },
     )
 
+    # TODO: FILE_MIN_SIZE: int = 1024 * 1024 * 1024
     flow.from_source(
         source=SOURCE_REPO,
         entrypoint="load_dataset.py:load_dataset",
@@ -64,6 +65,7 @@ if __name__ == "__main__":
         },
     )
 
+    # TODO: FILE_MIN_SIZE: int = 1024 * 1024
     flow.from_source(
         source=SOURCE_REPO,
         entrypoint="load_dataset.py:load_dataset",
