@@ -12,7 +12,7 @@ if __name__ == "__main__":
         name="Export Product",
         parameters={},
         work_pool_name=WORK_POOL_NAME,
-        # cron="55 * * * *",
+        cron="0 0 1 * *",  # TODO: Check exactly when to run this flow
         print_next_steps=False,
     )
 
@@ -111,26 +111,3 @@ if __name__ == "__main__":
             ]
         },
     )
-
-    # extract_mapset(
-    #     [
-    #         TileBundle("analysis_foundation", 12, 16),
-    #         TileBundle("analysis_report", 12, 16),
-    #         TileBundle("analysis_building", 12, 16),
-    #         TileBundle("analysis_risk", 12, 16),
-    #         TileBundle("analysis_monitoring", 12, 16),
-    #         TileBundle("facade_scan", 12, 16, upload_dataset=True),
-    #         TileBundle("incident", 12, 16, upload_dataset=True),
-    #         TileBundle(
-    #             "incident_neighborhood",
-    #             10,
-    #             16,
-    #             upload_dataset=True,
-    #         ),
-    #         TileBundle("incident_municipality", 7, 11, upload_dataset=True),
-    #         TileBundle("incident_district", 10, 16, upload_dataset=True),
-    #         # TileBundle(
-    #         #     "analysis_full", 10, 16, upload_dataset=True, generate_tiles=False
-    #         # ),
-    #     ]
-    # )
