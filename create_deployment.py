@@ -4,6 +4,8 @@ from prefect import flow
 SOURCE_REPO = "git@github.com:Laixer/FunderMapsSDK.git"
 WORK_POOL_NAME = "fm-worker-1"
 
+# TODO: Move into /scripts folder
+
 if __name__ == "__main__":
     flow.from_source(
         source=SOURCE_REPO,
@@ -35,6 +37,43 @@ if __name__ == "__main__":
         name="Load Dataset",
         work_pool_name=WORK_POOL_NAME,
         print_next_steps=False,
+    )
+
+    flow.from_source(
+        source=SOURCE_REPO,
+        entrypoint="load_dataset.py:load_dataset",
+    ).deploy(
+        name="load-bag",
+        work_pool_name=WORK_POOL_NAME,
+        print_next_steps=False,
+        parameters={
+            "dataset_input": "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg",
+        },
+    )
+
+    flow.from_source(
+        source=SOURCE_REPO,
+        entrypoint="load_dataset.py:load_dataset",
+    ).deploy(
+        name="load-bag3d",
+        work_pool_name=WORK_POOL_NAME,
+        print_next_steps=False,
+        parameters={
+            "dataset_input": "https://data.3dbag.nl/v20241216/3dbag_nl.gpkg.zip",
+            "dataset_layer": ["lod22_2d", "pand"],
+        },
+    )
+
+    flow.from_source(
+        source=SOURCE_REPO,
+        entrypoint="load_dataset.py:load_dataset",
+    ).deploy(
+        name="load-cbs",
+        work_pool_name=WORK_POOL_NAME,
+        print_next_steps=False,
+        parameters={
+            "dataset_input": "https://service.pdok.nl/cbs/wijkenbuurten/2024/atom/downloads/wijkenbuurten_2024.gpkg",
+        },
     )
 
     flow.from_source(

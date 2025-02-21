@@ -19,8 +19,8 @@ from fundermapssdk.tippecanoe import tippecanoe
 @dataclass
 class TileBundle:
     tileset: str
-    min_zoom: int
-    max_zoom: int
+    min_zoom: int = 12
+    max_zoom: int = 16
     upload_dataset: bool = False
     generate_tiles: bool = True
 
@@ -28,24 +28,6 @@ class TileBundle:
         return f"{self.tileset} ({self.tileset})"
 
 
-# TODO: Get from the database
-# TODO: Dont need this, configure via flow interface
-# BUCKET: str = "fundermaps-tileset"
-# BUNDLES: list[TileBundle] = [
-#     TileBundle("analysis_foundation", 12, 16),
-#     TileBundle("analysis_report", 12, 16),
-#     TileBundle("analysis_building", 12, 16),
-#     TileBundle("analysis_risk", 12, 16),
-#     TileBundle("analysis_monitoring", 12, 16),
-#     TileBundle("facade_scan", 12, 16, upload_dataset=True),
-#     TileBundle("incident", 12, 16, upload_dataset=True, generate_tiles=False),
-#     TileBundle(
-#         "incident_neighborhood", 10, 16, upload_dataset=True, generate_tiles=False
-#     ),
-#     TileBundle("incident_municipality", 7, 11, upload_dataset=True),
-#     TileBundle("incident_district", 10, 16, upload_dataset=True),
-#     TileBundle("analysis_full", 10, 16, upload_dataset=True, generate_tiles=False),
-# ]
 TILE_CACHE_MAX_AGE: int = 60 * 60 * 6  # 6 hours
 
 
@@ -157,19 +139,19 @@ if __name__ == "__main__":
     asyncio.run(
         extract_mapset(
             [
-                TileBundle("analysis_foundation", 12, 16),
-                TileBundle("analysis_report", 12, 16),
-                TileBundle("analysis_building", 12, 16),
-                TileBundle("analysis_risk", 12, 16),
-                TileBundle("analysis_monitoring", 12, 16),
-                TileBundle("facade_scan", 12, 16, upload_dataset=True),
-                TileBundle("incident", 12, 16, upload_dataset=True),
-                TileBundle(
-                    "incident_neighborhood",
-                    10,
-                    16,
-                    upload_dataset=True,
-                ),
+                # TileBundle("analysis_foundation", 12, 16),
+                # TileBundle("analysis_report", 12, 16),
+                # TileBundle("analysis_building", 12, 16),
+                # TileBundle("analysis_risk", 12, 16),
+                # TileBundle("analysis_monitoring", 12, 16),
+                # TileBundle("facade_scan", 12, 16, upload_dataset=True),
+                # TileBundle("incident", 12, 16, upload_dataset=True),
+                # TileBundle(
+                #     "incident_neighborhood",
+                #     10,
+                #     16,
+                #     upload_dataset=True,
+                # ),
                 TileBundle("incident_municipality", 7, 11, upload_dataset=True),
                 TileBundle("incident_district", 10, 16, upload_dataset=True),
                 # TileBundle(
