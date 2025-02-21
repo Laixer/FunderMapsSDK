@@ -15,13 +15,15 @@ if __name__ == "__main__":
         work_pool_name=WORK_POOL_NAME,
         cron="0 0 1 * *",  # TODO: Check exactly when to run this flow
         print_next_steps=False,
+        ignore_warnings=True,
     )
 
     flow.from_source(
         source=SOURCE_REPO,
         entrypoint="refresh_models.py:refresh_models",
     ).deploy(
-        name="Database Models Update",
+        name="calculate-db-models-stats",
+        description="Update database, calculate models and statistics",
         work_pool_name=WORK_POOL_NAME,
         cron="05 20 * * *",
         print_next_steps=False,
