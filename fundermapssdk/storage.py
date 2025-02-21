@@ -13,7 +13,7 @@ class ObjectStorageProvider:
         self.config = config
         self.client = None
 
-    def upload_file(self, file_path: str, key: str, *args):
+    def upload_file(self, file_path: str, key: str, bucket: None | str = None, *args):
         """
         Uploads a file to the specified key in the storage bucket.
 
@@ -31,11 +31,11 @@ class ObjectStorageProvider:
         """
         self.__logger(logging.DEBUG, f"Uploading file {file_path} to {key}")
 
-        self.client.upload_file(file_path, self.config.bucket, key, *args)
+        self.client.upload_file(file_path, bucket or self.config.bucket, key, *args)
 
         self.__logger(logging.DEBUG, f"File uploaded to {key}")
 
-    def download_file(self, file_path: str, key: str, *args):
+    def download_file(self, file_path: str, key: str, bucket: None | str = None, *args):
         """
         Downloads a file from the specified key in the storage bucket.
 
@@ -53,17 +53,20 @@ class ObjectStorageProvider:
         """
         self.__logger(logging.DEBUG, f"Downloading file {key} to {file_path}")
 
-        self.client.download_file(self.config.bucket, key, file_path, *args)
+        self.client.download_file(bucket or self.config.bucket, key, file_path, *args)
 
         self.__logger(logging.DEBUG, f"File downloaded to {file_path}")
 
-    def upload_bulk(self, file_paths: str, extra_args: Any | None = None):
+    # TODO: Pass bucket as an argument
+    def upload_bulk(
+        self, file_paths: str, bucket: None | str = None, extra_args: Any | None = None
+    ):
         transfer_manager = TransferManager(self.client)
 
         for file_path in file_paths:
             transfer_manager.upload(
                 file_path,
-                self.config.bucket,
+                bucket or self.config.bucket,
                 file_path,
                 extra_args=extra_args,
             )
