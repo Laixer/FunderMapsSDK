@@ -12,7 +12,6 @@ if __name__ == "__main__":
         entrypoint="export_product.py:export_product",
     ).deploy(
         name="Export Product",
-        parameters={},
         work_pool_name=WORK_POOL_NAME,
         cron="0 0 1 * *",  # TODO: Check exactly when to run this flow
         print_next_steps=False,
@@ -23,7 +22,6 @@ if __name__ == "__main__":
         entrypoint="refresh_models.py:refresh_models",
     ).deploy(
         name="Database Models Update",
-        parameters={},
         work_pool_name=WORK_POOL_NAME,
         cron="05 20 * * *",
         print_next_steps=False,

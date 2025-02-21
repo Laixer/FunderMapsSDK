@@ -76,16 +76,6 @@ class FunderMapsSDK:
 
         return self._service_providers["s3"]
 
-    # def _pdf_provider(self):
-    #     if self.pdf_config is None:
-    #         raise ValueError("PDF configuration is not set")
-
-    #     if "pdf" not in self._service_providers:
-    #         self._service_providers["pdf"] = PDFProvider(self, self.pdf_config)
-    #         self._logger.debug("PDF provider initialized")
-
-    #     return self._service_providers["pdf"]
-
     @property
     def db(self):
         return self._db_provider()
@@ -97,7 +87,3 @@ class FunderMapsSDK:
     @property
     def s3(self):
         return self._s3_provider()
-
-    # @property
-    # def pdf(self):
-    #     return self._pdf_provider()

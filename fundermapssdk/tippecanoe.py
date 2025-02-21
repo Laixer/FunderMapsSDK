@@ -11,6 +11,20 @@ async def tippecanoe(
     max_zoom_level: int = 15,
     min_zoom_level: int = 10,
 ) -> bool:
+    """
+    Asynchronously runs the tippecanoe command to convert geospatial data to a vector tileset.
+
+    Args:
+        input (str): The input file path.
+        output (str): The output directory path.
+        layer (str): The layer name.
+        max_zoom_level (int): The maximum zoom level. Defaults to 15.
+        min_zoom_level (int): The minimum zoom level. Defaults to 10.
+
+    Returns:
+        bool: True if the command was successful, False otherwise.
+    """
+
     process = await asyncio.create_subprocess_exec(
         "tippecanoe",
         "--force",
@@ -20,7 +34,6 @@ async def tippecanoe(
         "-Z",
         str(min_zoom_level),
         "--output-to-directory",
-        # "-o",
         output,
         "--drop-densest-as-needed",
         "-l",

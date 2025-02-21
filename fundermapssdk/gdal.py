@@ -6,6 +6,33 @@ from fundermapssdk.config import DatabaseConfig
 
 
 class GDALProvider:
+    """
+    A class to interact with GDAL (Geospatial Data Abstraction Library) for various geospatial data operations.
+
+    Attributes:
+        _sdk: The SDK instance.
+        config (DatabaseConfig): The database configuration.
+
+    Methods:
+        version() -> tuple[int, int, int]:
+            Asynchronously retrieves the GDAL version.
+
+        _pg_connection_string() -> str:
+            Constructs the PostgreSQL connection string from the configuration.
+
+        from_postgis(output: str, *args) -> bool:
+            Asynchronously converts data from a PostGIS database to a specified output format.
+
+        to_postgis(input: str, *args) -> bool:
+            Asynchronously converts data from a specified input format to a PostGIS database.
+
+        ogr2ogr(input: str, output: str, *args) -> bool:
+            Asynchronously runs the ogr2ogr command to convert geospatial data between formats.
+
+        __logger(level, message):
+            Logs messages using the SDK's logger.
+    """
+
     def __init__(self, sdk, config: DatabaseConfig):
         self._sdk = sdk
         self.config = config
