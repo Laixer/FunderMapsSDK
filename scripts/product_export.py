@@ -64,7 +64,7 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
 
             logger.info(f"Uploading {csv_file} to S3")
             s3_path = f"product/{formatted_date_year}/{formatted_date_month}/{organization}.csv.gz"
-            await s3.upload_file(BUCKET, f"{csv_file}.gz", s3_path)
+            await s3.upload_file(BUCKET, f"{csv_file}.gz", s3_path) # TODO: Invalid argument
     else:
         logger.info("No data to export")
 

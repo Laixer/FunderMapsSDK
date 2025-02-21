@@ -62,4 +62,4 @@ async def run(fundermaps: FunderMapsSDK, args):
         with fundermaps.s3 as s3:
             logger.info(f"Uploading {csv_file} to S3")
             s3_path = f"export/{csv_file}"
-            await s3.upload_file(BUCKET, csv_file, s3_path)
+            await s3.upload_file(BUCKET, csv_file, s3_path) # Invalid argument

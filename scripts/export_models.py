@@ -27,4 +27,4 @@ async def run(fundermaps: FunderMapsSDK, args):
         with fundermaps.s3 as s3:
             logger.info(f"Uploading {output_file} to S3")
             s3_path = f"model/{util.date_path()}/{output_file}"
-            await s3.upload_file(BUCKET, output_file, s3_path)
+            await s3.upload_file(BUCKET, output_file, s3_path) # TODO: Invalid
