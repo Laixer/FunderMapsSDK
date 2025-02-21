@@ -1,6 +1,4 @@
-# import os
 import asyncio
-# import tempfile
 
 
 from prefect import flow
@@ -33,9 +31,6 @@ async def load_dataset(
     logger = get_run_logger()
 
     fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
-
-    # with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
-    #     os.chdir(tmp_dir)
 
     dataset_path = dataset_input
 

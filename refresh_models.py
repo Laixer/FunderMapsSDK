@@ -7,7 +7,7 @@ from tasks import *
 
 
 @flow(name="Refresh Models")
-def refresh():
+def refresh_models():
     db_config = DatabaseConfig(
         database="fundermaps",
         # host="db-pg-ams3-0-do-user-871803-0.b.db.ondigitalocean.com",
@@ -31,4 +31,4 @@ def refresh():
 
 
 if __name__ == "__main__":
-    refresh.serve(name="Database Update Deployment", cron="05 23 * * *")
+    refresh_models()

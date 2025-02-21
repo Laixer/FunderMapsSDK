@@ -12,13 +12,13 @@ if __name__ == "__main__":
         name="Export Product",
         parameters={},
         work_pool_name=WORK_POOL_NAME,
-        cron="55 * * * *",
+        # cron="55 * * * *",
         print_next_steps=False,
     )
 
     flow.from_source(
         source=SOURCE_REPO,
-        entrypoint="refresh_models.py:refresh",
+        entrypoint="refresh_models.py:refresh_models",
     ).deploy(
         name="Database Models Update",
         parameters={},
