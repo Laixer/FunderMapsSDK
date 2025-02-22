@@ -1,0 +1,14 @@
+[Unit]
+Description=Prefect Worker
+After=network.target
+
+[Service]
+User=eve
+WorkingDirectory=/home/eve/FunderMapsSDK
+ExecStart=/home/eve/FunderMapsSDK/.venv/bin/prefect worker start --pool fm-worker-1
+Restart=always
+# Add any other environment variables your worker needs
+# Environment=PREFECT_API_KEY=your_api_key
+
+[Install]
+WantedBy=multi-user.target
