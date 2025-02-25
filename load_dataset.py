@@ -27,7 +27,7 @@ async def load_dataset(
 
     logger = get_run_logger()
 
-    fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
+    fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config, logger=logger)
 
     dataset_path = dataset_input
 

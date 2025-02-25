@@ -97,7 +97,7 @@ async def export_product():
 
     logger = get_run_logger()
 
-    fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
+    fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config, logger=logger)
 
     # TODO: Fetch the organization IDs from the database
     for organization in ORGANIZATIONS:

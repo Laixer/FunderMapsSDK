@@ -1,4 +1,5 @@
 from prefect import flow
+from prefect.logging import get_run_logger
 
 from fundermapssdk import FunderMapsSDK
 from fundermapssdk.config import DatabaseConfig, S3Config
@@ -51,7 +52,9 @@ def refresh_models():
         service_uri="https://ams3.digitaloceanspaces.com",
     )
 
-    fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
+    logger = get_run_logger()
+
+    fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config, logger=logger)
 
     db_calculate_risk(fundermaps)
     db_refresh_statistics(fundermaps)
