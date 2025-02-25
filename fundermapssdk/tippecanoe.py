@@ -25,17 +25,22 @@ async def tippecanoe(
         bool: True if the command was successful, False otherwise.
     """
 
-    process = await asyncio.create_subprocess_exec(
-        "tippecanoe",
+    cmd_args = [
         "--force",
         "--read-parallel",
+        "--drop-densest-as-needed",
+        "--quiet",
+    ]
+
+    process = await asyncio.create_subprocess_exec(
+        "tippecanoe",
+        *cmd_args,
         "-z",
         str(max_zoom_level),
         "-Z",
         str(min_zoom_level),
         "--output-to-directory",
         output,
-        "--drop-densest-as-needed",
         "-l",
         layer,
         input,
