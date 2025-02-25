@@ -81,6 +81,9 @@ class GDALProvider:
         cmd_args = ["-overwrite"]
 
         gdal_version = await self.version()
+        if gdal_version < (3, 0, 0):
+            raise Exception("GDAL version 3.0.0 or higher is required")
+
         if gdal_version > (3, 8, 0) and gdal_version < (3, 9, 0):
             cmd_args.extend(
                 [

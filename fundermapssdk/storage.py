@@ -1,8 +1,8 @@
 import boto3
 import logging
-from typing import Any
 import boto3.session
-from boto3.s3.transfer import TransferManager
+from typing import Any
+from concurrent.futures import ThreadPoolExecutor
 
 from fundermapssdk.config import S3Config
 
@@ -57,19 +57,19 @@ class ObjectStorageProvider:
 
         self.__logger(logging.DEBUG, f"File downloaded to {file_path}")
 
-    # TODO: Pass bucket as an argument
     def upload_bulk(
         self, file_paths: str, bucket: None | str = None, extra_args: Any | None = None
     ):
-        transfer_manager = TransferManager(self.client)
-
-        for file_path in file_paths:
-            transfer_manager.upload(
-                file_path,
-                bucket or self.config.bucket,
-                file_path,
-                extra_args=extra_args,
+        def _upload_file(local_path):
+            self.client.upload_file(
+                local_path, bucket or self.config.bucket, local_path, extra_args
             )
+
+        MAX_THREADS = 10
+        with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
+            executor.map(_upload_file, file_paths)
+
+        self.__logger(logging.DEBUG, f"Uploaded {len(file_paths)} files")
 
     def __enter__(self):
         self.__logger(logging.DEBUG, "Connecting to S3")
