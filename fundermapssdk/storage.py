@@ -58,18 +58,31 @@ class ObjectStorageProvider:
         self.__logger(logging.DEBUG, f"File downloaded to {file_path}")
 
     def upload_bulk(
-        self, file_paths: str, bucket: None | str = None, extra_args: Any | None = None
+        self,
+        file_paths: list[str],
+        bucket: None | str = None,
+        extra_args: Any | None = None,
     ):
         def _upload_file(local_path):
             self.client.upload_file(
                 local_path, bucket or self.config.bucket, local_path, extra_args
             )
+            with self._upload_count_lock:
+                self._upload_count += 1
+
+        import threading
+
+        self._upload_count = 0
+        self._upload_count_lock = threading.Lock()
 
         MAX_THREADS = 10
         with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
             executor.map(_upload_file, file_paths)
 
-        self.__logger(logging.DEBUG, f"Uploaded {len(file_paths)} files")
+        if self._upload_count != len(file_paths):
+            raise Exception("Failed to upload all files")
+
+        self.__logger(logging.DEBUG, f"Uploaded {self._upload_count} files")
 
     def __enter__(self):
         self.__logger(logging.DEBUG, "Connecting to S3")
