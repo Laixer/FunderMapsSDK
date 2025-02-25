@@ -30,6 +30,7 @@ async def tippecanoe(
         "--read-parallel",
         "--drop-densest-as-needed",
         "--quiet",
+        "--no-tile-compression",
     ]
 
     process = await asyncio.create_subprocess_exec(
