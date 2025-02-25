@@ -53,6 +53,6 @@ async def tippecanoe(
     if process.returncode == 0:
         logger.debug(f"Command succeeded: {stdout.decode().strip()}")
     else:
-        logger.error(f"Command failed: {stderr.decode().strip()}")
+        raise Exception(f"Command failed: {stderr.decode().strip()}")
 
     return process.returncode == 0

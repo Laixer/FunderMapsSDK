@@ -129,7 +129,7 @@ async def extract_mapset(tilebundle: list[TileBundle]):
 
     logger = get_run_logger()
 
-    fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config)
+    fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config, logger=logger)
 
     for tileset in tilebundle:
         logger.info(f"Processing tileset '{tileset.tileset}'")
