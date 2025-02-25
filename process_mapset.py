@@ -28,7 +28,9 @@ class TileBundle:
         return f"{self.tileset} ({self.tileset})"
 
 
-TILE_CACHE_MAX_AGE: int = 60 * 60 * 6  # 6 hours
+TILE_CACHE: str = (
+    "max-age=43200,s-maxage=300,stale-while-revalidate=300,stale-if-error=600"
+)
 
 
 @task(name="Downloading Dataset", retries=3, cache_policy=NO_CACHE)
@@ -95,7 +97,7 @@ async def process_mapset(fundermaps: FunderMapsSDK, tileset: TileBundle):
 
             with fundermaps.s3 as s3:
                 tile_headers = {
-                    "CacheControl": f"max-age={TILE_CACHE_MAX_AGE}",
+                    "CacheControl": TILE_CACHE,
                     "ContentType": "application/x-protobuf",
                     "ContentEncoding": "gzip",
                     "ACL": "public-read",
