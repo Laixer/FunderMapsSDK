@@ -34,7 +34,7 @@ def db_refresh_statistics(fundermaps: FunderMapsSDK):
         db.refresh_materialized_view("data.statistics_postal_code_foundation_risk")
 
 
-@flow(name="Refresh Models")
+@flow
 def refresh_models():
     db_config = DatabaseConfig(
         database="fundermaps",

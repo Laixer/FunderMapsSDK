@@ -108,7 +108,6 @@ async def process_mapset(fundermaps: FunderMapsSDK, tileset: TileBundle):
                 )
 
 
-# @flow(name="Extract Dataset")
 @flow
 async def extract_mapset(tilebundle: list[TileBundle]):
     db_config = DatabaseConfig(

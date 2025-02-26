@@ -1,8 +1,5 @@
 from prefect import flow
-from prefect.automations import Automation
 from prefect.events import DeploymentEventTrigger
-from prefect.events.schemas.automations import EventTrigger
-from prefect.events.actions import CancelFlowRun
 
 SOURCE_REPO = "git@github.com:Laixer/FunderMapsSDK.git"
 WORK_POOL_NAME = "fm-worker-1"
