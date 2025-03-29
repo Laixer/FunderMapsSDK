@@ -2,4 +2,4 @@ httpx[http2]==0.28.1
 psycopg2-binary==2.9.10
 colorlog==6.9.0
 boto3==1.36.24
-prefect==3.2.6
+python-dotenv==1.1.0
