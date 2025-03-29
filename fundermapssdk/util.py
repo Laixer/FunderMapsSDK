@@ -75,36 +75,6 @@ def collect_files_with_extension(directory, extension) -> list:
     return collected_files
 
 
-# TODO: Remove this function
-# TODO: pass path suggestion as argument
-def find_config() -> ConfigParser:
-    """
-    Finds and reads the configuration file.
-
-    Returns:
-        ConfigParser: The parsed configuration object.
-
-    Raises:
-        FileNotFoundError: If no configuration file is found in the specified paths.
-    """
-
-    config = ConfigParser()
-
-    config_paths = [
-        "/etc/fundermaps/config.ini",
-        "./config.ini",
-    ]
-
-    for path in config_paths:
-        if os.path.exists(path):
-            config.read(path)
-            break
-    else:
-        raise FileNotFoundError("No configuration file found in the specified paths.")
-
-    return config
-
-
 def validate_file_size(file_path, min_size):
     """
     Validates the size of a file.
