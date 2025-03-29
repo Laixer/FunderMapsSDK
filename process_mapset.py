@@ -5,10 +5,11 @@ import logging
 import argparse
 import colorlog
 import time
-from dataclasses import dataclass, field
+import random
 from pathlib import Path
 from typing import List
 from dotenv import load_dotenv
+from dataclasses import dataclass, field
 
 from fundermapssdk import FunderMapsSDK, util
 from fundermapssdk.config import DatabaseConfig, S3Config
@@ -25,8 +26,17 @@ class TileBundle:
     processing_time: float = field(default=0.0, init=False)
     errors: List[str] = field(default_factory=list, init=False)
 
+    def table_name(self) -> str:
+        return f"maplayer.{self.tileset}"
+
     def __str__(self):
         return f"{self.tileset} ({self.tileset})"
+
+
+@dataclass
+class JobContext:
+    tileset: TileBundle
+    work_dir: str
 
 
 TILE_CACHE: str = (
@@ -38,70 +48,81 @@ RETRY_DELAY = 5  # seconds
 
 
 async def download_dataset(
-    fundermaps: FunderMapsSDK, tileset: TileBundle, logger: logging.Logger
+    fundermaps: FunderMapsSDK,
+    context: JobContext,
+    logger: logging.Logger,
 ) -> bool:
-    logger.info(f"Downloading '{tileset.tileset}' from PostGIS")
+    logger.info(f"Downloading '{context.tileset.tileset}' from PostGIS")
 
-    output_file = f"{tileset.tileset}.gpkg"
-    maplayer = f"maplayer.{tileset.tileset}"
+    output_file = os.path.join(context.work_dir, f"{context.tileset.tileset}.gpkg")
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
+            maplayer = context.tileset.table_name()
             await fundermaps.gdal.from_postgis(output_file, maplayer)
             return True
         except Exception as e:
             if attempt < MAX_RETRIES:
                 wait_time = RETRY_DELAY * attempt
                 logger.warning(
-                    f"Download attempt {attempt} failed for {tileset.tileset}. Retrying in {wait_time}s. Error: {e}"
+                    f"Download attempt {attempt} failed for {context.tileset.tileset}. Retrying in {wait_time}s. Error: {e}"
                 )
                 await asyncio.sleep(wait_time)
             else:
                 logger.error(
-                    f"Failed to download {tileset.tileset} after {MAX_RETRIES} attempts: {e}"
+                    f"Failed to download {context.tileset.tileset} after {MAX_RETRIES} attempts: {e}"
                 )
-                tileset.errors.append(f"Download failed: {str(e)}")
+                # TODO: Write the error to the context
+                context.tileset.errors.append(f"Download failed: {str(e)}")
                 return False
 
 
 async def generate_tileset(
-    fundermaps: FunderMapsSDK, tileset: TileBundle, logger: logging.Logger
+    fundermaps: FunderMapsSDK,
+    context: JobContext,
+    logger: logging.Logger,
 ) -> bool:
     try:
-        logger.info(f"Converting tileset '{tileset.tileset}' to GeoJSON")
+        logger.info(f"Converting tileset '{context.tileset.tileset}' to GeoJSON")
         await fundermaps.gdal.ogr2ogr(
-            f"{tileset.tileset}.gpkg",
-            f"{tileset.tileset}.geojson",
+            os.path.join(context.work_dir, f"{context.tileset.tileset}.gpkg"),
+            os.path.join(context.work_dir, f"{context.tileset.tileset}.geojson"),
         )
 
-        logger.info(f"Generating tileset '{tileset.tileset}'")
+        logger.info(f"Generating tileset '{context.tileset.tileset}'")
         await tippecanoe(
-            f"{tileset.tileset}.geojson",
-            tileset.tileset,
-            tileset.tileset,
-            tileset.max_zoom,
-            tileset.min_zoom,
+            os.path.join(context.work_dir, f"{context.tileset.tileset}.geojson"),
+            os.path.join(context.work_dir, context.tileset.tileset),
+            context.tileset.tileset,
+            context.tileset.max_zoom,
+            context.tileset.min_zoom,
         )
         return True
     except Exception as e:
-        logger.error(f"Failed to generate tileset for {tileset.tileset}: {e}")
-        tileset.errors.append(f"Tileset generation failed: {str(e)}")
+        logger.error(f"Failed to generate tileset for {context.tileset.tileset}: {e}")
+        context.tileset.errors.append(f"Tileset generation failed: {str(e)}")
         return False
 
 
 def upload_dataset(
-    fundermaps: FunderMapsSDK, tileset: TileBundle, logger: logging.Logger
+    fundermaps: FunderMapsSDK,
+    context: JobContext,
+    logger: logging.Logger,
 ) -> bool:
     try:
-        logger.info(f"Uploading {tileset.tileset} to S3")
+        logger.info(f"Uploading {context.tileset.tileset} to S3")
 
         with fundermaps.s3 as s3:
-            s3_path = f"mapset/{util.date_path()}/{tileset.tileset}.gpkg"
-            s3.upload_file(f"{tileset.tileset}.gpkg", s3_path, bucket="fundermaps-data")
+            s3_path = f"mapset/{util.date_path()}/{context.tileset.tileset}.gpkg"
+            s3.upload_file(
+                os.path.join(context.work_dir, f"{context.tileset.tileset}.gpkg"),
+                s3_path,
+                bucket="fundermaps-data",
+            )
         return True
     except Exception as e:
-        logger.error(f"Failed to upload dataset for {tileset.tileset}: {e}")
-        tileset.errors.append(f"Dataset upload failed: {str(e)}")
+        logger.error(f"Failed to upload dataset for {context.tileset.tileset}: {e}")
+        context.tileset.errors.append(f"Dataset upload failed: {str(e)}")
         return False
 
 
@@ -112,28 +133,28 @@ async def process_mapset(
     success = True
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
-        os.chdir(tmp_dir)
+        ctx = JobContext(tileset, tmp_dir)
 
-        log_context = {"tileset": tileset.tileset, "temp_dir": tmp_dir}
-        logger.info(f"Starting processing for {tileset.tileset}", extra=log_context)
+        logger.info(f"Starting processing for {tileset.tileset}")
 
-        if not await download_dataset(fundermaps, tileset, logger):
+        if not await download_dataset(fundermaps, ctx, logger):
             success = False
             tileset.processing_time = time.time() - start_time
             return success
 
         if tileset.upload_dataset:
-            if not upload_dataset(fundermaps, tileset, logger):
+            if not upload_dataset(fundermaps, ctx, logger):
                 success = False
 
         if tileset.generate_tiles and success:
-            if not await generate_tileset(fundermaps, tileset, logger):
+            if not await generate_tileset(fundermaps, ctx, logger):
                 success = False
             else:
+                # TODO: Move this to a separate function
                 try:
                     logger.info(f"Uploading tiles for {tileset.tileset} to S3")
                     tile_files = util.collect_files_with_extension(
-                        tileset.tileset, ".pbf"
+                        os.path.join(tmp_dir, tileset.tileset), ".pbf"
                     )
 
                     with fundermaps.s3 as s3:
