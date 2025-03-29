@@ -1,40 +1,43 @@
+FROM python:3-slim AS builder
+
+# Install build dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    g++ \
+    git \
+    ca-certificates \
+    zlib1g-dev \
+    libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build tippecanoe
+RUN git clone https://github.com/felt/tippecanoe.git \
+    && cd tippecanoe \
+    && make -j \
+    && make install
+
+# Final stage
 FROM python:3-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for build
+# Install runtime dependencies only (what tippecanoe needs to run, not build)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libsqlite3-dev \
-    zlib1g-dev \
-    g++ \
-    git \
-    ca-certificates \
+    libsqlite3-0 \
     gdal-bin \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install tippecanoe
-RUN git clone https://github.com/felt/tippecanoe.git \
-    && cd tippecanoe \
-    && make -j \
-    && make install \
-    && cd .. \
-    && rm -rf tippecanoe
-
-# Clean up build dependencies to reduce image size
-RUN apt-get purge -y --auto-remove build-essential g++ git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Copy tippecanoe from builder stage
+COPY --from=builder /usr/local/bin/tippecanoe* /usr/local/bin/
 
 # Copy requirements file
 COPY requirements.txt .
 
-# Upgrade pip
-RUN pip install --no-cache-dir --upgrade pip
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade pip and install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . /app/
