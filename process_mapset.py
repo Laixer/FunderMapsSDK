@@ -385,13 +385,7 @@ async def main() -> int:
     success = True
 
     try:
-        # if True:
         await process_concurrent(fundermaps, tilebundles, logger, args.max_workers)
-        # else:
-        #     for tileset in tilebundles:
-        #         logger.info(f"Processing tileset '{tileset.tileset}'")
-        #         if not await process_mapset(fundermaps, tileset, logger):
-        #             success = False
 
         elapsed = time.time() - start_time
         if success:
