@@ -75,6 +75,7 @@ def collect_files_with_extension(directory, extension) -> list:
     return collected_files
 
 
+# TODO: Remove this function
 # TODO: pass path suggestion as argument
 def find_config() -> ConfigParser:
     """

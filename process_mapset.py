@@ -207,52 +207,50 @@ def parse_arguments() -> argparse.Namespace:
     db_group = parser.add_argument_group("Database Configuration")
     db_group.add_argument(
         "--db-host",
-        default=os.environ.get("FUNDERMAPS_DB_HOST", "localhost"),
+        default=os.environ.get("FUNDERMAPS_DB_HOST"),
         help="Database host (env: FUNDERMAPS_DB_HOST)",
     )
     db_group.add_argument(
         "--db-name",
-        default=os.environ.get("FUNDERMAPS_DB_NAME", "postgres"),
+        default=os.environ.get("FUNDERMAPS_DB_NAME"),
         help="Database name (env: FUNDERMAPS_DB_NAME)",
     )
     db_group.add_argument(
         "--db-user",
-        default=os.environ.get("FUNDERMAPS_DB_USER", "postgres"),
+        default=os.environ.get("FUNDERMAPS_DB_USER"),
         help="Database user (env: FUNDERMAPS_DB_USER)",
     )
     db_group.add_argument(
         "--db-password",
-        default=os.environ.get("FUNDERMAPS_DB_PASSWORD", ""),
+        default=os.environ.get("FUNDERMAPS_DB_PASSWORD"),
         help="Database password (env: FUNDERMAPS_DB_PASSWORD)",
     )
     db_group.add_argument(
         "--db-port",
         type=int,
-        default=int(os.environ.get("FUNDERMAPS_DB_PORT", "25060")),
+        default=int(os.environ.get("FUNDERMAPS_DB_PORT", "5432")),
         help="Database port (env: FUNDERMAPS_DB_PORT)",
     )
 
     s3_group = parser.add_argument_group("S3 Configuration")
     s3_group.add_argument(
         "--s3-bucket",
-        default=os.environ.get("FUNDERMAPS_S3_BUCKET", ""),
+        default=os.environ.get("FUNDERMAPS_S3_BUCKET"),
         help="S3 bucket name (env: FUNDERMAPS_S3_BUCKET)",
     )
     s3_group.add_argument(
         "--s3-access-key",
-        default=os.environ.get("FUNDERMAPS_S3_ACCESS_KEY", ""),
+        default=os.environ.get("FUNDERMAPS_S3_ACCESS_KEY"),
         help="S3 access key (env: FUNDERMAPS_S3_ACCESS_KEY)",
     )
     s3_group.add_argument(
         "--s3-secret-key",
-        default=os.environ.get("FUNDERMAPS_S3_SECRET_KEY", ""),
+        default=os.environ.get("FUNDERMAPS_S3_SECRET_KEY"),
         help="S3 secret key (env: FUNDERMAPS_S3_SECRET_KEY)",
     )
     s3_group.add_argument(
         "--s3-service-uri",
-        default=os.environ.get(
-            "FUNDERMAPS_S3_SERVICE_URI", "https://ams3.digitaloceanspaces.com"
-        ),
+        default=os.environ.get("FUNDERMAPS_S3_SERVICE_URI"),
         help="S3 service URI (env: FUNDERMAPS_S3_SERVICE_URI)",
     )
 
@@ -297,6 +295,8 @@ async def process_concurrent(
         async with semaphore:
             return await process_mapset(fundermaps, tileset, logger)
 
+    random.shuffle(tilebundles)
+
     tasks = [bounded_process(tileset) for tileset in tilebundles]
     await asyncio.gather(*tasks)
 
@@ -335,7 +335,7 @@ async def main() -> int:
     handler = colorlog.StreamHandler()
     handler.setFormatter(formatter)
 
-    logger = colorlog.getLogger("mapset-extractor")
+    logger = colorlog.getLogger("process mapset")
     logger.setLevel(getattr(logging, args.log_level))
     logger.handlers = []
     logger.addHandler(handler)
