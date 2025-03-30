@@ -21,7 +21,7 @@ class FunderMapsCommand:
         self.args = None
         self.start_time = None
 
-    def load_env_files(self):
+    def _load_env_files(self):
         """Load environment variables from .env files."""
         dotenv_paths = [
             Path(".env"),
@@ -33,9 +33,9 @@ class FunderMapsCommand:
             if dotenv_path.exists():
                 load_dotenv(dotenv_path=str(dotenv_path))
 
-    def setup_argument_parser(self) -> argparse.ArgumentParser:
+    def _setup_argument_parser(self) -> argparse.ArgumentParser:
         """Set up argument parser with common arguments."""
-        self.load_env_files()
+        self._load_env_files()
 
         parser = argparse.ArgumentParser(description=self.description)
 
@@ -105,7 +105,7 @@ class FunderMapsCommand:
         """Add command-specific arguments. Override in subclasses."""
         pass
 
-    def setup_logging(self, name: str) -> logging.Logger:
+    def _setup_logging(self, name: str) -> logging.Logger:
         """Set up logger with consistent formatting."""
         formatter = colorlog.ColoredFormatter(
             "%(thin_white)s%(asctime)s%(reset)s | "
@@ -144,7 +144,7 @@ class FunderMapsCommand:
 
         return logger
 
-    def initialize_sdk(self) -> FunderMapsSDK:
+    def _initialize_sdk(self) -> FunderMapsSDK:
         """Initialize FunderMapsSDK with configuration from args."""
         db_config = DatabaseConfig(
             database=self.args.db_name,
@@ -171,11 +171,11 @@ class FunderMapsCommand:
 
     async def run(self) -> int:
         """Run the command with setup and error handling."""
-        parser = self.setup_argument_parser()
+        parser = self._setup_argument_parser()
         self.args = parser.parse_args()
 
-        self.logger = self.setup_logging(self.__class__.__name__)
-        self.fundermaps = self.initialize_sdk()
+        self.logger = self._setup_logging(self.__class__.__name__)
+        self.fundermaps = self._initialize_sdk()
 
         self.start_time = time.time()
         self.logger.info(f"Starting {self.description.lower()}...")
