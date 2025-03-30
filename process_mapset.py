@@ -403,17 +403,13 @@ async def main() -> int:
         logger.info(f"Processing all {len(tilebundles)} tilesets")
 
     start_time = time.time()
-    success = True
+    logger.info("Starting Mapset processing...")
 
     try:
         await process_concurrent(fundermaps, tilebundles, logger, args.max_workers)
 
-        elapsed = time.time() - start_time
-        if success:
-            logger.info(f"Mapset processing completed successfully in {elapsed:.2f}s")
-        else:
-            logger.warning(f"Mapset processing completed with errors in {elapsed:.2f}s")
-
+        total_elapsed = time.time() - start_time
+        logger.info(f"Mapset processing completed successfully in {total_elapsed:.2f}s")
     except Exception as e:
         logger.error(f"Error processing Mapset: {e}")
         import traceback
@@ -421,7 +417,7 @@ async def main() -> int:
         traceback.print_exc()
         return 1
 
-    return 0 if success else 1
+    return 0
 
 
 if __name__ == "__main__":
