@@ -4,7 +4,6 @@ import glob
 import shutil
 import httpx
 
-from configparser import ConfigParser
 
 FILE_ALLOWED_EXTENSIONS = [".geojson", ".gpkg", ".shp", ".zip", ".csv"]
 FILE_MIN_SIZE: int = 1024  # 1 KB

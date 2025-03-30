@@ -1,7 +1,6 @@
 import os
 import time
 import logging
-import asyncio
 import argparse
 import colorlog
 from pathlib import Path
@@ -192,10 +191,3 @@ class FunderMapsCommand:
 
             traceback.print_exc()
             return 1
-
-
-def run_command(command_cls: type) -> None:
-    """Helper function to run a command from the main script."""
-    command = command_cls()
-    exit_code = asyncio.run(command.run())
-    exit(exit_code)
