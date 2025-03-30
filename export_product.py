@@ -1,10 +1,13 @@
 import csv
+import os
 import asyncio
+import logging
+import argparse
+import colorlog
+import time
 from datetime import datetime
-
-from prefect import flow, task
-from prefect.logging import get_run_logger
-from prefect.cache_policies import NO_CACHE
+from pathlib import Path
+from dotenv import load_dotenv
 
 from fundermapssdk import FunderMapsSDK
 from fundermapssdk.config import DatabaseConfig, S3Config
@@ -20,13 +23,9 @@ ORGANIZATIONS: list[str] = [
 ]
 
 
-@task(
-    name="Process Export",
-    description="Process product tracker data export",
-    cache_policy=NO_CACHE,
-)
-async def process_export(fundermaps: FunderMapsSDK, organization: str):
-    logger = get_run_logger()
+async def process_export(
+    fundermaps: FunderMapsSDK, logger: logging.Logger, organization: str
+):
     logger.info("Exporting product tracker data")
 
     with fundermaps.db as db:
@@ -77,34 +76,161 @@ async def process_export(fundermaps: FunderMapsSDK, organization: str):
         logger.info("No data to export")
 
 
-@flow
-async def export_product():
+def load_env_files():
+    dotenv_paths = [
+        Path(".env"),
+        Path(".env.local"),
+        Path(os.path.dirname(os.path.abspath(__file__))) / ".env",
+    ]
+
+    for dotenv_path in dotenv_paths:
+        if dotenv_path.exists():
+            load_dotenv(dotenv_path=str(dotenv_path))
+
+
+def parse_arguments() -> argparse.Namespace:
+    load_env_files()
+
+    parser = argparse.ArgumentParser(description="Process Mapset tilesets")
+
+    db_group = parser.add_argument_group("Database Configuration")
+    db_group.add_argument(
+        "--db-host",
+        default=os.environ.get("FUNDERMAPS_DB_HOST"),
+        help="Database host (env: FUNDERMAPS_DB_HOST)",
+    )
+    db_group.add_argument(
+        "--db-name",
+        default=os.environ.get("FUNDERMAPS_DB_NAME"),
+        help="Database name (env: FUNDERMAPS_DB_NAME)",
+    )
+    db_group.add_argument(
+        "--db-user",
+        default=os.environ.get("FUNDERMAPS_DB_USER"),
+        help="Database user (env: FUNDERMAPS_DB_USER)",
+    )
+    db_group.add_argument(
+        "--db-password",
+        default=os.environ.get("FUNDERMAPS_DB_PASSWORD"),
+        help="Database password (env: FUNDERMAPS_DB_PASSWORD)",
+    )
+    db_group.add_argument(
+        "--db-port",
+        type=int,
+        default=int(os.environ.get("FUNDERMAPS_DB_PORT", "5432")),
+        help="Database port (env: FUNDERMAPS_DB_PORT)",
+    )
+
+    s3_group = parser.add_argument_group("S3 Configuration")
+    s3_group.add_argument(
+        "--s3-bucket",
+        default=os.environ.get("FUNDERMAPS_S3_BUCKET"),
+        help="S3 bucket name (env: FUNDERMAPS_S3_BUCKET)",
+    )
+    s3_group.add_argument(
+        "--s3-access-key",
+        default=os.environ.get("FUNDERMAPS_S3_ACCESS_KEY"),
+        help="S3 access key (env: FUNDERMAPS_S3_ACCESS_KEY)",
+    )
+    s3_group.add_argument(
+        "--s3-secret-key",
+        default=os.environ.get("FUNDERMAPS_S3_SECRET_KEY"),
+        help="S3 secret key (env: FUNDERMAPS_S3_SECRET_KEY)",
+    )
+    s3_group.add_argument(
+        "--s3-service-uri",
+        default=os.environ.get("FUNDERMAPS_S3_SERVICE_URI"),
+        help="S3 service URI (env: FUNDERMAPS_S3_SERVICE_URI)",
+    )
+
+    parser.add_argument(
+        "--log-level",
+        default=os.environ.get("FUNDERMAPS_LOG_LEVEL", "INFO"),
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Logging level (env: FUNDERMAPS_LOG_LEVEL)",
+    )
+
+    args = parser.parse_args()
+
+    return args
+
+
+async def main() -> int:
+    args = parse_arguments()
+
+    formatter = colorlog.ColoredFormatter(
+        "%(thin_white)s%(asctime)s%(reset)s | "
+        "%(bold_blue)s%(name)s%(reset)s | "
+        "%(log_color)s%(levelname)-8s%(reset)s | "
+        "%(message_log_color)s%(message)s%(reset)s",
+        datefmt="%H:%M:%S",
+        reset=True,
+        log_colors={
+            "DEBUG": "cyan",
+            "INFO": "bold_green",
+            "WARNING": "bold_yellow",
+            "ERROR": "bold_red",
+            "CRITICAL": "bold_white,bg_red",
+        },
+        secondary_log_colors={
+            "message": {
+                "DEBUG": "cyan",
+                "INFO": "white",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red",
+            }
+        },
+        style="%",
+    )
+
+    handler = colorlog.StreamHandler()
+    handler.setFormatter(formatter)
+
+    logger = colorlog.getLogger("export product")
+    logger.setLevel(getattr(logging, args.log_level))
+    logger.handlers = []
+    logger.addHandler(handler)
+    logger.propagate = False
+
     db_config = DatabaseConfig(
-        database="fundermaps",
-        # host="db-pg-ams3-0-do-user-871803-0.b.db.ondigitalocean.com",
-        host="private-db-pg-ams3-0-do-user-871803-0.b.db.ondigitalocean.com",
-        user="fundermaps",
-        password="AVNS_CtcfLEuVWqRXiK__gKt",
-        port=25060,
+        database=args.db_name,
+        host=args.db_host,
+        user=args.db_user,
+        password=args.db_password,
+        port=args.db_port,
     )
 
     s3_config = S3Config(
-        bucket="fundermaps-development",
-        access_key="LOUSAQJLIXLMIXKTKDW5",
-        secret_key="/edoJzt5h5hZok6AzuRzWF79EOzLRw3ywH0WzdbGjAU",
-        service_uri="https://ams3.digitaloceanspaces.com",
+        bucket=args.s3_bucket,
+        access_key=args.s3_access_key,
+        secret_key=args.s3_secret_key,
+        service_uri=args.s3_service_uri,
     )
-
-    logger = get_run_logger()
 
     fundermaps = FunderMapsSDK(db_config=db_config, s3_config=s3_config, logger=logger)
 
-    # TODO: Fetch the organization IDs from the database
-    for organization in ORGANIZATIONS:
-        logger.info(f"Processing organization: {organization}")
+    start_time = time.time()
+    logger.info("Starting product export process...")
 
-        await process_export(fundermaps, organization)
+    try:
+        # TODO: Fetch the organization IDs from the database
+        for organization in ORGANIZATIONS:
+            logger.info(f"Processing organization: {organization}")
+            await process_export(fundermaps, organization)
+
+        total_elapsed = time.time() - start_time
+        logger.info(f"Export product completed successfully in {total_elapsed:.2f}s")
+    except Exception as e:
+        logger.error(f"Error during product export: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return 1
+
+    return 0
 
 
 if __name__ == "__main__":
-    asyncio.run(export_product())
+    exit_code = asyncio.run(main())
+    exit(exit_code)
