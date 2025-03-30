@@ -168,6 +168,25 @@ class FunderMapsCommand:
         """Execute the command. Must be implemented by subclasses."""
         raise NotImplementedError("Subclasses must implement execute()")
 
+    async def pre_execute(self) -> None:
+        """Hook for subclasses to perform actions before execute.
+
+        This method runs after initialization but before the main execute call.
+        Override in subclasses to add custom pre-execution logic.
+        """
+        pass
+
+    async def post_execute(self, success: bool) -> None:
+        """Hook for subclasses to perform actions after execute.
+
+        Args:
+            success: Whether the execution was successful
+
+        This method runs after execute completes, regardless of success or failure.
+        Override in subclasses to add custom post-execution logic.
+        """
+        pass
+
     async def run(self) -> int:
         """Run the command with setup and error handling."""
         parser = self._setup_argument_parser()
@@ -179,8 +198,11 @@ class FunderMapsCommand:
         self.start_time = time.time()
         self.logger.info(f"Starting {self.description.lower()}...")
 
+        success = False
         try:
+            await self.pre_execute()
             await self.execute()
+            success = True
 
             total_elapsed = time.time() - self.start_time
             self.logger.info(f"Command completed successfully in {total_elapsed:.2f}s")
@@ -191,3 +213,5 @@ class FunderMapsCommand:
 
             traceback.print_exc()
             return 1
+        finally:
+            await self.post_execute(success)
