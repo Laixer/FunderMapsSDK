@@ -52,4 +52,4 @@ COPY . /app/
 #     FUNDERMAPS_S3_SERVICE_URI=https://ams3.digitaloceanspaces.com
 
 # Run the script when the container launches
-ENTRYPOINT ["python"]
+ENTRYPOINT ["python3"]
