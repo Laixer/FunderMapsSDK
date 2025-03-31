@@ -149,6 +149,37 @@ class ProcessMapsetCommand(FunderMapsCommand):
             context.tileset.errors.append(f"Dataset upload failed: {str(e)}")
             return False
 
+    async def _upload_tiles(self, tileset: TileBundle, tileset_dir: str) -> bool:
+        """Upload generated tiles to S3."""
+        try:
+            self.logger.info(f"Uploading tiles for {tileset.tileset} to S3")
+            tile_files = util.collect_files_with_extension(tileset_dir, ".pbf")
+
+            if not tile_files:
+                self.logger.warning(
+                    f"No .pbf files found in {tileset_dir} for {tileset.tileset}"
+                )
+                tileset.errors.append("No tiles generated to upload")
+                return False
+
+            with self.fundermaps.s3 as s3:
+                tile_headers = {
+                    "CacheControl": TILE_CACHE,
+                    "ContentType": "application/x-protobuf",
+                    "ACL": "public-read",
+                }
+
+                s3.upload_bulk(
+                    tile_files,
+                    bucket="fundermaps-tileset",
+                    extra_args=tile_headers,
+                )
+            return True
+        except Exception as e:
+            self.logger.error(f"Failed to upload tiles for {tileset.tileset}: {e}")
+            tileset.errors.append(f"Tile upload failed: {str(e)}")
+            return False
+
     async def _process_mapset(self, tileset: TileBundle) -> bool:
         start_time = time.time()
         success = True
@@ -171,31 +202,9 @@ class ProcessMapsetCommand(FunderMapsCommand):
                 if not await self._generate_tileset(ctx):
                     success = False
                 else:
-                    # TODO: Move this to a separate function
-                    try:
-                        self.logger.info(f"Uploading tiles for {tileset.tileset} to S3")
-                        tile_files = util.collect_files_with_extension(
-                            os.path.join(tmp_dir, tileset.tileset), ".pbf"
-                        )
-
-                        with self.fundermaps.s3 as s3:
-                            tile_headers = {
-                                "CacheControl": TILE_CACHE,
-                                "ContentType": "application/x-protobuf",
-                                "ACL": "public-read",
-                            }
-
-                            s3.upload_bulk(
-                                tile_files,
-                                bucket="fundermaps-tileset",
-                                extra_args=tile_headers,
-                            )
-                    except Exception as e:
-                        self.logger.error(
-                            f"Failed to upload tiles for {tileset.tileset}: {e}"
-                        )
-                        tileset.errors.append(f"Tile upload failed: {str(e)}")
-                        success = False
+                    success = await self._upload_tiles(
+                        tileset, os.path.join(tmp_dir, tileset.tileset)
+                    )
 
         tileset.processing_time = time.time() - start_time
         if success:
@@ -246,30 +255,49 @@ class ProcessMapsetCommand(FunderMapsCommand):
 
     async def execute(self):
         """Execute the process mapset command."""
-        tilebundles = get_default_tilebundles()
+        try:
+            tilebundles = get_default_tilebundles()
 
-        if self.args.tileset:
-            filtered_bundles = []
-            requested_tilesets = set(self.args.tileset)
+            if self.args.tileset:
+                filtered_bundles = []
+                requested_tilesets = set(self.args.tileset)
 
-            for bundle in tilebundles:
-                if bundle.tileset in requested_tilesets:
-                    filtered_bundles.append(bundle)
-
-            if not filtered_bundles:
-                self.logger.warning(
-                    "None of the specified tilesets were found. Available tilesets:"
-                )
                 for bundle in tilebundles:
-                    self.logger.warning(f"  - {bundle.tileset}")
+                    if bundle.tileset in requested_tilesets:
+                        filtered_bundles.append(bundle)
+
+                if not filtered_bundles:
+                    self.logger.warning(
+                        "None of the specified tilesets were found. Available tilesets:"
+                    )
+                    for bundle in tilebundles:
+                        self.logger.warning(f"  - {bundle.tileset}")
+                    return 1
+
+                tilebundles = filtered_bundles
+                self.logger.info(f"Processing {len(tilebundles)} selected tilesets")
+            else:
+                self.logger.info(f"Processing all {len(tilebundles)} tilesets")
+
+            results = await self._process_concurrent(tilebundles)
+
+            # Report summary
+            success_count = sum(1 for tb in results if not tb.errors)
+            failure_count = len(results) - success_count
+
+            self.logger.info(
+                f"Processing complete: {success_count} succeeded, {failure_count} failed"
+            )
+            if failure_count > 0:
+                self.logger.warning("Failed tilesets:")
+                for tb in results:
+                    if tb.errors:
+                        self.logger.warning(f"  - {tb.tileset}: {'; '.join(tb.errors)}")
                 return 1
-
-            tilebundles = filtered_bundles
-            self.logger.info(f"Processing {len(tilebundles)} selected tilesets")
-        else:
-            self.logger.info(f"Processing all {len(tilebundles)} tilesets")
-
-        await self._process_concurrent(tilebundles)
+            return 0
+        except Exception as e:
+            self.logger.error(f"An error occurred during mapset processing: {e}")
+            return 1
 
 
 if __name__ == "__main__":
