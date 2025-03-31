@@ -8,9 +8,9 @@ class ModelRefreshCommand(FunderMapsCommand):
     """Command to refresh models in the database."""
 
     def __init__(self):
-        super().__init__(description="Export product tracker data")
+        super().__init__(description="Refresh models in the database")
 
-    def db_calculate_risk(self):
+    def _db_calculate_risk(self):
         self.logger.info("Starting risk calculation...")
         start_time = time.time()
         with self.fundermaps.db as db:
@@ -28,7 +28,7 @@ class ModelRefreshCommand(FunderMapsCommand):
         elapsed = time.time() - start_time
         self.logger.info(f"Risk calculation completed in {elapsed:.2f}s")
 
-    def db_refresh_statistics(self):
+    def _db_refresh_statistics(self):
         self.logger.info("Starting statistics refresh...")
         start_time = time.time()
         with self.fundermaps.db as db:
@@ -59,10 +59,10 @@ class ModelRefreshCommand(FunderMapsCommand):
     async def execute(self):
         """Execute the model refresh command."""
         self.logger.info("Step 1: Calculating risk metrics...")
-        self.db_calculate_risk()
+        self._db_calculate_risk()
 
         self.logger.info("Step 2: Refreshing statistics...")
-        self.db_refresh_statistics()
+        self._db_refresh_statistics()
 
 
 if __name__ == "__main__":
