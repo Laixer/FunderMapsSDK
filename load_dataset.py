@@ -48,11 +48,10 @@ class LoadDatasetCommand(FunderMapsCommand):
 
     async def execute(self):
         """Execute the load dataset command."""
-        dataset_input = "https://example.com/dataset.zip"  # Replace with your dataset URL or S3 path
-        dataset_layer = ["layer_name"]  # Replace with your dataset layer name
-        delete_dataset = (
-            False  # Set to True if you want to delete the dataset after loading
-        )
+        dataset_input = "https://example.com/dataset.zip"
+        dataset_layer = ["layer_name"]
+        delete_dataset = False
+
         await self._load_dataset(
             dataset_input=dataset_input,
             dataset_layer=dataset_layer,
