@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Build tippecanoe
-RUN git clone https://github.com/felt/tippecanoe.git \
+RUN git clone --depth 1 https://github.com/felt/tippecanoe.git \
     && cd tippecanoe \
     && make -j \
     && make install
@@ -42,14 +42,5 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY . /app/
 
-# Set environment variables - these can be overridden at runtime
-# ENV FUNDERMAPS_LOG_LEVEL=INFO \
-#     FUNDERMAPS_MAX_WORKERS=3 \
-#     FUNDERMAPS_DB_HOST=localhost \
-#     FUNDERMAPS_DB_NAME=postgres \
-#     FUNDERMAPS_DB_USER=postgres \
-#     FUNDERMAPS_DB_PORT=25060 \
-#     FUNDERMAPS_S3_SERVICE_URI=https://ams3.digitaloceanspaces.com
-
-# Run the script when the container launches
+# Run the script when the container launches (this should be set in the command)
 ENTRYPOINT ["python3"]
