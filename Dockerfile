@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Build tippecanoe
 RUN git clone --depth 1 https://github.com/felt/tippecanoe.git \
     && cd tippecanoe \
-    && make -j \
+    && make -j 2 \
     && make install
 
 # Final stage
