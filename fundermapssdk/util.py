@@ -147,3 +147,16 @@ def compress_file(file_path, output_path):
     with open(file_path, "rb") as f_in:
         with gzip.open(output_path, "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
+
+
+def decompress_file(file_path, output_path):
+    """
+    Decompresses a gzip file.
+
+    Args:
+        file_path (str): The path to the gzip file to decompress.
+        output_path (str): The path where the decompressed file will be saved.
+    """
+    with gzip.open(file_path, "rb") as f_in:
+        with open(output_path, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
