@@ -1,0 +1,15 @@
+[Unit]
+Description=FunderMaps ETL - Process Mapset
+Wants=network-online.target
+After=network-online.target
+Conflicts=fundermaps-refresh-models.service
+After=fundermaps-refresh-models.service
+
+[Service]
+Type=oneshot
+Environment="IMAGE=fundermaps-sdk:latest"
+# ExecStartPre=/usr/bin/docker pull ${IMAGE}
+ExecStart=/usr/bin/docker run --rm --name fundermaps-refresh-models --env-file /etc/fundermaps/config.env ${IMAGE} process_mapset.py --max-workers 2
+
+[Install]
+WantedBy=multi-user.target
