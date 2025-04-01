@@ -9,6 +9,8 @@ Type=oneshot
 Environment="IMAGE=fundermaps-sdk:latest"
 # ExecStartPre=/usr/bin/docker pull ${IMAGE}
 ExecStart=/usr/bin/docker run --rm --name fundermaps-refresh-models --env-file /etc/fundermaps/config.env ${IMAGE} refresh_models.py
+Restart=on-failure
+RestartSec=30s
 
 [Install]
 WantedBy=multi-user.target
