@@ -2,7 +2,6 @@
 Description=FunderMaps ETL - Refresh Models
 Wants=network-online.target
 After=network-online.target
-Conflicts=fundermaps-process-mapset.service
 OnSuccess=fundermaps-process-mapset.service
 
 [Service]

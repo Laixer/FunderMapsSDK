@@ -7,7 +7,9 @@ After=network-online.target
 Type=oneshot
 Environment="IMAGE=fundermaps-sdk:latest"
 # ExecStartPre=/usr/bin/docker pull ${IMAGE}
-ExecStart=/usr/bin/docker run --rm --name fundermaps-refresh-models --env-file /etc/fundermaps/config.env ${IMAGE} export_product.py
+ExecStart=/usr/bin/docker run --rm --name fundermaps-export-product --env-file /etc/fundermaps/config.env ${IMAGE} export_product.py
+Restart=on-failure
+RestartSec=30s
 
 [Install]
 WantedBy=multi-user.target
