@@ -62,14 +62,16 @@ class ObjectStorageProvider:
         Deletes a file from the specified key in the storage bucket.
 
         Args:
-            bucket (str): The name of the bucket to delete the file from.
             key (str): The key of the file to be deleted.
+            bucket (str, optional): The name of the bucket to delete the file from.
+                If None, uses the bucket specified in the config.
 
         Returns:
             None
 
         Raises:
-            None
+            ClientError: If deletion fails due to permissions, connectivity issues,
+                         or if the file doesn't exist.
         """
         self.__logger(logging.DEBUG, f"Deleting file {key}")
 
@@ -83,6 +85,26 @@ class ObjectStorageProvider:
         bucket: None | str = None,
         extra_args: Any | None = None,
     ):
+        """
+        Uploads multiple files to the storage bucket in parallel.
+
+        This method uses a thread pool to upload files concurrently, which can
+        significantly improve performance when uploading many files.
+
+        Args:
+            file_paths (list[str]): List of local file paths to upload.
+            bucket (str, optional): The name of the bucket to upload files to.
+                If None, uses the bucket specified in the config.
+            extra_args (dict, optional): Extra arguments to pass to the upload operation,
+                such as ContentType, ACL, etc.
+
+        Returns:
+            None
+
+        Raises:
+            Exception: If not all files were successfully uploaded.
+        """
+
         def _upload_file(local_path):
             self.client.upload_file(
                 local_path, bucket or self.config.bucket, local_path, extra_args
@@ -105,6 +127,12 @@ class ObjectStorageProvider:
         self.__logger(logging.DEBUG, f"Uploaded {self._upload_count} files")
 
     def __enter__(self):
+        """
+        Context manager entry point. Initializes S3 client connection.
+
+        Returns:
+            ObjectStorageProvider: The initialized storage provider instance.
+        """
         self.__logger(logging.DEBUG, "Connecting to S3")
 
         session = boto3.session.Session()
@@ -120,7 +148,25 @@ class ObjectStorageProvider:
         return self
 
     def __exit__(self, type, value, traceback):
+        """
+        Context manager exit point.
+
+        Args:
+            type: Exception type if an exception was raised.
+            value: Exception value if an exception was raised.
+            traceback: Traceback if an exception was raised.
+        """
         pass
 
     def __logger(self, level, message):
+        """
+        Internal logging helper method.
+
+        Args:
+            level (int): Logging level (e.g., logging.DEBUG, logging.INFO).
+            message (str): Message to log.
+
+        Returns:
+            The result of the SDK's logger.log call.
+        """
         return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")
