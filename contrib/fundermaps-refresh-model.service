@@ -1,0 +1,17 @@
+[Unit]
+Description=FunderMaps ETL - Refresh Models
+Wants=network-online.target
+After=network-online.target
+OnSuccess=fundermaps-process-mapset.service
+
+[Service]
+Type=oneshot
+Environment="IMAGE=fundermaps-sdk:latest"
+# ExecStartPre=/usr/bin/docker pull ${IMAGE}
+ExecStart=/usr/bin/docker run --rm --name fundermaps-refresh-models --env-file /etc/fundermaps/config.env ${IMAGE} refresh_models.py --log-simple
+SyslogIdentifier=fundermaps-refresh-models
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target

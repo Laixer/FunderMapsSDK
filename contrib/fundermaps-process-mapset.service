@@ -1,0 +1,17 @@
+[Unit]
+Description=FunderMaps ETL - Process Mapset
+Wants=network-online.target
+After=network-online.target
+After=fundermaps-refresh-model.service
+
+[Service]
+Type=oneshot
+Environment="IMAGE=fundermaps-sdk:latest"
+# ExecStartPre=/usr/bin/docker pull ${IMAGE}
+ExecStart=/usr/bin/docker run --rm --name fundermaps-process-mapset --env-file /etc/fundermaps/config.env ${IMAGE} process_mapset.py --max-workers 2 --log-simple
+SyslogIdentifier=fundermaps-process-mapset
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
