@@ -79,20 +79,25 @@ class ObjectStorageProvider:
 
         self.__logger(logging.DEBUG, f"File deleted {key}")
 
-    def upload_bulk(
+    def upload_directory(
         self,
-        file_paths: list[str],
+        directory_path: str,
+        key: str = "",
         bucket: None | str = None,
         extra_args: Any | None = None,
     ):
         """
-        Uploads multiple files to the storage bucket in parallel.
+        Uploads an entire directory to the storage bucket in parallel.
 
-        This method uses a thread pool to upload files concurrently, which can
-        significantly improve performance when uploading many files.
+        This method walks through the specified directory and uploads all files
+        while preserving the directory structure. It uses a thread pool to upload
+        files concurrently, which can significantly improve performance when
+        uploading many files.
 
         Args:
-            file_paths (list[str]): List of local file paths to upload.
+            directory_path (str): Path to the local directory to upload.
+            key (str, optional): The key prefix under which to store files in the bucket.
+                If provided, files will be stored under this prefix.
             bucket (str, optional): The name of the bucket to upload files to.
                 If None, uses the bucket specified in the config.
             extra_args (dict, optional): Extra arguments to pass to the upload operation,
@@ -104,18 +109,26 @@ class ObjectStorageProvider:
         Raises:
             Exception: If not all files were successfully uploaded.
         """
-
-        def _upload_file(local_path):
-            self.client.upload_file(
-                local_path, bucket or self.config.bucket, local_path, extra_args
-            )
-            with self._upload_count_lock:
-                self._upload_count += 1
-
+        import os
         import threading
+
+        file_paths = []
+        for root, _, files in os.walk(directory_path):
+            for file in files:
+                file_paths.append(os.path.join(root, file))
 
         self._upload_count = 0
         self._upload_count_lock = threading.Lock()
+
+        def _upload_file(local_path):
+            rel_path = os.path.relpath(local_path, directory_path)
+            s3_key = os.path.join(key, rel_path).replace("\\", "/")
+
+            self.client.upload_file(
+                local_path, bucket or self.config.bucket, s3_key, extra_args
+            )
+            with self._upload_count_lock:
+                self._upload_count += 1
 
         MAX_THREADS = 10
         with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
@@ -124,7 +137,10 @@ class ObjectStorageProvider:
         if self._upload_count != len(file_paths):
             raise Exception("Failed to upload all files")
 
-        self.__logger(logging.DEBUG, f"Uploaded {self._upload_count} files")
+        self.__logger(
+            logging.DEBUG,
+            f"Uploaded {self._upload_count} files from directory {directory_path}",
+        )
 
     def __enter__(self):
         """
