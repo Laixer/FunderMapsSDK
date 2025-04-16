@@ -226,6 +226,20 @@ class FunderMapsCommand:
         """
         pass
 
+    async def _create_job(self) -> None:
+        """Create a job in the database.
+
+        This method is a placeholder and should be implemented in subclasses.
+        """
+        pass
+
+    async def _complete_job(self) -> None:
+        """Complete a job in the database.
+
+        This method is a placeholder and should be implemented in subclasses.
+        """
+        pass
+
     async def run(self) -> int:
         """Run the command with setup and error handling."""
         parser = self._setup_argument_parser()
@@ -239,6 +253,7 @@ class FunderMapsCommand:
 
         success = False
         try:
+            await self._create_job()
             await self.pre_execute()
             await self.execute()
             success = True
@@ -254,3 +269,4 @@ class FunderMapsCommand:
             return 1
         finally:
             await self.post_execute(success)
+            await self._complete_job()
