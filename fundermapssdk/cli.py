@@ -108,11 +108,40 @@ class FunderMapsCommand:
         return parser
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
-        """Add command-specific arguments. Override in subclasses."""
+        """Add command-specific arguments to the parser.
+
+        This method is meant to be overridden by subclasses to extend the argument parser
+        with command-specific options. The base implementation does nothing.
+
+        Args:
+            parser: The argparse.ArgumentParser instance to add arguments to
+
+        Examples:
+            ```python
+            def add_arguments(self, parser):
+                parser.add_argument('--my-option', help='Description of my option')
+                parser.add_argument('input_file', help='Path to input file')
+            ```
+        """
         pass
 
     def _setup_logging(self, name: str) -> logging.Logger:
-        """Set up logger with consistent formatting."""
+        """Set up a configured logger with consistent formatting.
+
+        Configures a logger with appropriate formatting based on the command line arguments.
+        Uses colorlog for enhanced terminal output when not in simple mode.
+
+        Args:
+            name: The name to use for the logger, typically the class name
+
+        Returns:
+            logging.Logger: A configured logger instance with appropriate handlers and formatting
+
+        Notes:
+            - When log_simple is True, a plain formatter is used (suitable for systemd/syslog)
+            - When log_simple is False (default), colorized output is used with timestamps and log levels
+            - The log level is determined by the --log-level argument
+        """
         if self.args.log_simple:
             formatter = logging.Formatter("%(message)s")
         else:
