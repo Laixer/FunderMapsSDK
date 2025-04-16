@@ -153,14 +153,6 @@ class ProcessMapsetCommand(FunderMapsCommand):
         """Upload generated tiles to S3."""
         try:
             self.logger.info(f"Uploading tiles for {tileset.tileset} to S3")
-            # tile_files = util.collect_files_with_extension(tileset_dir, ".pbf")
-
-            # if not tile_files:
-            #     self.logger.warning(
-            #         f"No .pbf files found in {tileset_dir} for {tileset.tileset}"
-            #     )
-            #     tileset.errors.append("No tiles generated to upload")
-            #     return False
 
             non_tile_files = util.collect_files_with_extension(tileset_dir, ".json")
             if non_tile_files:
@@ -181,11 +173,6 @@ class ProcessMapsetCommand(FunderMapsCommand):
                     "ACL": "public-read",
                 }
 
-                # s3.upload_bulk(
-                #     tile_files,
-                #     bucket="fundermaps-tileset",
-                #     extra_args=tile_headers,
-                # )
                 s3.upload_directory(
                     tileset_dir,
                     tileset.tileset,
