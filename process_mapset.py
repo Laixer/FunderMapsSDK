@@ -153,14 +153,26 @@ class ProcessMapsetCommand(FunderMapsCommand):
         """Upload generated tiles to S3."""
         try:
             self.logger.info(f"Uploading tiles for {tileset.tileset} to S3")
-            tile_files = util.collect_files_with_extension(tileset_dir, ".pbf")
+            # tile_files = util.collect_files_with_extension(tileset_dir, ".pbf")
 
-            if not tile_files:
-                self.logger.warning(
-                    f"No .pbf files found in {tileset_dir} for {tileset.tileset}"
+            # if not tile_files:
+            #     self.logger.warning(
+            #         f"No .pbf files found in {tileset_dir} for {tileset.tileset}"
+            #     )
+            #     tileset.errors.append("No tiles generated to upload")
+            #     return False
+
+            non_tile_files = util.collect_files_with_extension(tileset_dir, ".json")
+            if non_tile_files:
+                self.logger.info(
+                    f"Removing {len(non_tile_files)} non-tile files from directory"
                 )
-                tileset.errors.append("No tiles generated to upload")
-                return False
+                for file_path in non_tile_files:
+                    try:
+                        os.remove(file_path)
+                        self.logger.debug(f"Removed file: {file_path}")
+                    except OSError as e:
+                        self.logger.warning(f"Failed to remove file {file_path}: {e}")
 
             with self.fundermaps.s3 as s3:
                 tile_headers = {
@@ -169,8 +181,14 @@ class ProcessMapsetCommand(FunderMapsCommand):
                     "ACL": "public-read",
                 }
 
-                s3.upload_bulk(
-                    tile_files,
+                # s3.upload_bulk(
+                #     tile_files,
+                #     bucket="fundermaps-tileset",
+                #     extra_args=tile_headers,
+                # )
+                s3.upload_directory(
+                    tileset_dir,
+                    tileset.tileset,
                     bucket="fundermaps-tileset",
                     extra_args=tile_headers,
                 )
