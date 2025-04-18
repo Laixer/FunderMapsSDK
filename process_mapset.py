@@ -43,27 +43,6 @@ MAX_RETRIES = 3
 RETRY_DELAY = 5  # seconds
 
 
-def get_default_tilebundles() -> List[TileBundle]:
-    return [
-        TileBundle("analysis_foundation", 12, 16),
-        TileBundle("analysis_report", 12, 16),
-        TileBundle("analysis_building", 12, 16),
-        TileBundle("analysis_risk", 12, 16),
-        TileBundle("analysis_monitoring", 12, 16),
-        TileBundle("facade_scan", 12, 16, upload_dataset=True),
-        TileBundle("incident", 12, 16, upload_dataset=True),
-        TileBundle(
-            "incident_neighborhood",
-            10,
-            16,
-            upload_dataset=True,
-        ),
-        TileBundle("incident_municipality", 7, 11, upload_dataset=True),
-        TileBundle("incident_district", 10, 16, upload_dataset=True),
-        TileBundle("analysis_full", 10, 16, upload_dataset=True, generate_tiles=False),
-    ]
-
-
 class ProcessMapsetCommand(FunderMapsCommand):
     """Command to refresh models in the database."""
 
@@ -261,28 +240,100 @@ class ProcessMapsetCommand(FunderMapsCommand):
     async def execute(self):
         """Execute the process mapset command."""
         try:
-            tilebundles = get_default_tilebundles()
+            tilebundles = []
 
-            if self.args.tileset:
-                filtered_bundles = []
-                requested_tilesets = set(self.args.tileset)
-
-                for bundle in tilebundles:
-                    if bundle.tileset in requested_tilesets:
-                        filtered_bundles.append(bundle)
-
-                if not filtered_bundles:
-                    self.logger.warning(
-                        "None of the specified tilesets were found. Available tilesets:"
+            with self.fundermaps.db as db:
+                if self.args.tileset:
+                    requested_tilesets = set(self.args.tileset)
+                    self.logger.info(
+                        f"Fetching specific tilesets from database: {', '.join(requested_tilesets)}"
                     )
-                    for bundle in tilebundles:
-                        self.logger.warning(f"  - {bundle.tileset}")
-                    return 1
 
-                tilebundles = filtered_bundles
-                self.logger.info(f"Processing {len(tilebundles)} selected tilesets")
-            else:
-                self.logger.info(f"Processing all {len(tilebundles)} tilesets")
+                    # Build a parameterized query to fetch only the requested tilesets
+                    placeholders = ", ".join(["%s"] * len(requested_tilesets))
+                    query = f"""
+                        SELECT
+                            tileset, 
+                            zoom_min_level, 
+                            zoom_max_level, 
+                            map_enabled,
+                            upload_dataset
+                        FROM maplayer.bundle
+                        WHERE enabled = TRUE AND tileset IN ({placeholders})
+                    """
+
+                    with db.db.cursor() as cur:
+                        cur.execute(query, list(requested_tilesets))
+
+                        for row in cur.fetchall():
+                            (
+                                tileset,
+                                zoom_min_level,
+                                zoom_max_level,
+                                map_enabled,
+                                upload_dataset,
+                            ) = row
+                            tilebundles.append(
+                                TileBundle(
+                                    tileset=tileset,
+                                    min_zoom=zoom_min_level,
+                                    max_zoom=zoom_max_level,
+                                    upload_dataset=upload_dataset,
+                                    generate_tiles=map_enabled,
+                                )
+                            )
+
+                        if not tilebundles:
+                            self.logger.warning(
+                                "None of the specified tilesets were found. Fetching available tilesets:"
+                            )
+                            # Fetch all available tilesets to show as options
+                            cur.execute(
+                                """
+                                SELECT tileset 
+                                FROM maplayer.bundle 
+                                WHERE enabled = TRUE
+                            """
+                            )
+                            available_tilesets = [row[0] for row in cur.fetchall()]
+                            for tileset in available_tilesets:
+                                self.logger.warning(f"  - {tileset}")
+                            return 1
+
+                    self.logger.info(f"Processing {len(tilebundles)} selected tilesets")
+                else:
+                    self.logger.info("Fetching all tilesets from database")
+                    with db.db.cursor() as cur:
+                        query = """
+                            SELECT
+                                tileset, 
+                                zoom_min_level, 
+                                zoom_max_level, 
+                                map_enabled,
+                                upload_dataset
+                            FROM maplayer.bundle
+                            WHERE enabled = TRUE
+                        """
+                        cur.execute(query)
+
+                        for row in cur.fetchall():
+                            (
+                                tileset,
+                                zoom_min_level,
+                                zoom_max_level,
+                                map_enabled,
+                                upload_dataset,
+                            ) = row
+                            tilebundles.append(
+                                TileBundle(
+                                    tileset=tileset,
+                                    min_zoom=zoom_min_level,
+                                    max_zoom=zoom_max_level,
+                                    upload_dataset=upload_dataset,
+                                    generate_tiles=map_enabled,
+                                )
+                            )
+                    self.logger.info(f"Processing all {len(tilebundles)} tilesets")
 
             results = await self._process_concurrent(tilebundles)
 
