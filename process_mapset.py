@@ -256,7 +256,7 @@ class ProcessMapsetCommand(FunderMapsCommand):
                             tileset, 
                             zoom_min_level, 
                             zoom_max_level, 
-                            map_enabled,
+                            generate_tileset,
                             upload_dataset
                         FROM maplayer.bundle
                         WHERE enabled = TRUE AND tileset IN ({placeholders})
@@ -270,7 +270,7 @@ class ProcessMapsetCommand(FunderMapsCommand):
                                 tileset,
                                 zoom_min_level,
                                 zoom_max_level,
-                                map_enabled,
+                                generate_tileset,
                                 upload_dataset,
                             ) = row
                             tilebundles.append(
@@ -279,25 +279,14 @@ class ProcessMapsetCommand(FunderMapsCommand):
                                     min_zoom=zoom_min_level,
                                     max_zoom=zoom_max_level,
                                     upload_dataset=upload_dataset,
-                                    generate_tiles=map_enabled,
+                                    generate_tiles=generate_tileset,
                                 )
                             )
 
                         if not tilebundles:
                             self.logger.warning(
-                                "None of the specified tilesets were found. Fetching available tilesets:"
+                                "No matching tilesets found in database"
                             )
-                            # Fetch all available tilesets to show as options
-                            cur.execute(
-                                """
-                                SELECT tileset 
-                                FROM maplayer.bundle 
-                                WHERE enabled = TRUE
-                            """
-                            )
-                            available_tilesets = [row[0] for row in cur.fetchall()]
-                            for tileset in available_tilesets:
-                                self.logger.warning(f"  - {tileset}")
                             return 1
 
                     self.logger.info(f"Processing {len(tilebundles)} selected tilesets")
@@ -309,7 +298,7 @@ class ProcessMapsetCommand(FunderMapsCommand):
                                 tileset, 
                                 zoom_min_level, 
                                 zoom_max_level, 
-                                map_enabled,
+                                generate_tileset,
                                 upload_dataset
                             FROM maplayer.bundle
                             WHERE enabled = TRUE
@@ -321,7 +310,7 @@ class ProcessMapsetCommand(FunderMapsCommand):
                                 tileset,
                                 zoom_min_level,
                                 zoom_max_level,
-                                map_enabled,
+                                generate_tileset,
                                 upload_dataset,
                             ) = row
                             tilebundles.append(
@@ -330,7 +319,7 @@ class ProcessMapsetCommand(FunderMapsCommand):
                                     min_zoom=zoom_min_level,
                                     max_zoom=zoom_max_level,
                                     upload_dataset=upload_dataset,
-                                    generate_tiles=map_enabled,
+                                    generate_tiles=generate_tileset,
                                 )
                             )
                     self.logger.info(f"Processing all {len(tilebundles)} tilesets")
