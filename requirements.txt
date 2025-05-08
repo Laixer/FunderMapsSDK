@@ -1,5 +1,5 @@
 httpx[http2]==0.28.1
 psycopg2-binary==2.9.10
 colorlog
-boto3==1.36.24
+boto3==1.38.11
 python-dotenv
