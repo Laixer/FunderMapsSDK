@@ -22,7 +22,15 @@ class ProductExportCommand(FunderMapsCommand):
     def __init__(self):
         super().__init__(description="Export product tracker data")
 
-    async def process_export(self, organization: str):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--date",
+            type=str,
+            default=None,
+            help="Reference date for export in YYYY-MM-DD format (defaults to current date)",
+        )
+
+    async def process_export(self, organization: str, reference_date: datetime):
         """Process export for a specific organization."""
         self.logger.info("Exporting product tracker data")
 
@@ -39,10 +47,10 @@ class ProductExportCommand(FunderMapsCommand):
                     FROM    application.product_tracker AS pt
                     JOIN    geocoder.building AS b ON b.id = pt.building_id
                     WHERE   pt.organization_id = %s
-                    AND     pt.create_date >= date_trunc('month', CURRENT_DATE) - interval '1 month'
-                    AND     pt.create_date < date_trunc('month', CURRENT_DATE)"""
+                    AND     pt.create_date >= date_trunc('month', %s) - interval '1 month'
+                    AND     pt.create_date < date_trunc('month', %s)"""
 
-                cur.execute(query, (organization,))
+                cur.execute(query, (organization, reference_date, reference_date))
 
                 csv_file = f"{organization}.csv"
 
@@ -62,9 +70,8 @@ class ProductExportCommand(FunderMapsCommand):
 
         if data_written:
             with self.fundermaps.s3 as s3:
-                current_date = datetime.now()
-                formatted_date_year = current_date.strftime("%Y")
-                formatted_date_month = current_date.strftime("%b").lower()
+                formatted_date_year = reference_date.strftime("%Y")
+                formatted_date_month = reference_date.strftime("%b").lower()
 
                 self.logger.info(f"Uploading {csv_file} to S3")
 
@@ -75,10 +82,18 @@ class ProductExportCommand(FunderMapsCommand):
 
     async def execute(self):
         """Execute the product export command."""
+
+        reference_date = (
+            datetime.strptime(self.args.date, "%Y-%m-%d")
+            if self.args.date
+            else datetime.now()
+        )
+        self.logger.info(f"Reference date: {reference_date}")
+
         # TODO: Fetch the organization IDs from the database
         for organization in ORGANIZATIONS:
             self.logger.info(f"Processing organization: {organization}")
-            await self.process_export(organization)
+            await self.process_export(organization, reference_date)
 
 
 if __name__ == "__main__":
