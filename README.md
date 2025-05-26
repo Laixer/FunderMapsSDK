@@ -69,6 +69,12 @@ python export_product.py
 python cleanup_storage.py
 ```
 
+### Load Dataset
+
+```bash
+python load_dataset.py /path/to/dataset.csv
+```
+
 ## Configuration
 
 The SDK uses environment variables or configuration files for:
