@@ -2,7 +2,7 @@ import csv
 import asyncio
 from datetime import datetime
 
-from fundermapssdk.cli import FunderMapsCommand
+from fundermapssdk.command import FunderMapsCommand
 
 # TODO: Get from the database
 ORGANIZATIONS: list[str] = [

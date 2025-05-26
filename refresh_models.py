@@ -2,7 +2,7 @@ import time
 import asyncio
 import argparse
 
-from fundermapssdk.cli import FunderMapsCommand
+from fundermapssdk.command import FunderMapsCommand
 
 
 class ModelRefreshCommand(FunderMapsCommand):

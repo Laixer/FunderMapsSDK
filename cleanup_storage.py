@@ -1,6 +1,6 @@
 import asyncio
 
-from fundermapssdk.cli import FunderMapsCommand
+from fundermapssdk.command import FunderMapsCommand
 
 
 class CleanupStorageCommand(FunderMapsCommand):

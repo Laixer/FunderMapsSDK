@@ -8,7 +8,7 @@ from typing import List
 from dataclasses import dataclass, field
 
 from fundermapssdk import util
-from fundermapssdk.cli import FunderMapsCommand
+from fundermapssdk.command import FunderMapsCommand
 from fundermapssdk.tippecanoe import tippecanoe
 
 
