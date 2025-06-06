@@ -47,7 +47,7 @@ class FunderMapsSDK:
         self.mail_config = mail_config
 
         self._service_providers = {}
-        self._logger = kwargs.get("logger", logger)
+        self._logger: logging.Logger = kwargs.get("logger", logger)
 
     def _db_provider(self) -> DbProvider:
         if self.db_config is None:
