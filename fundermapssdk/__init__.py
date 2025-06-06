@@ -4,7 +4,8 @@ import logging
 
 from fundermapssdk.db import DbProvider
 from fundermapssdk.gdal import GDALProvider
-from fundermapssdk.config import DatabaseConfig, S3Config, PDFCoConfig
+from fundermapssdk.mail import MailProvider
+from fundermapssdk.config import DatabaseConfig, S3Config, PDFCoConfig, MailConfig
 from fundermapssdk.storage import ObjectStorageProvider
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,7 @@ class FunderMapsSDK:
         db_config: DatabaseConfig | None = None,
         s3_config: S3Config | None = None,
         pdf_config: PDFCoConfig | None = None,
+        mail_config: MailConfig | None = None,
         **kwargs,
     ):
         self.sdk_directory = os.path.dirname(os.path.realpath(__file__))
@@ -42,6 +44,7 @@ class FunderMapsSDK:
         self.db_config = db_config
         self.s3_config = s3_config
         self.pdf_config = pdf_config
+        self.mail_config = mail_config
 
         self._service_providers = {}
         self._logger = kwargs.get("logger", logger)
@@ -76,6 +79,16 @@ class FunderMapsSDK:
 
         return self._service_providers["s3"]
 
+    def _mail_provider(self):
+        if self.mail_config is None:
+            raise ValueError("Mail configuration is not set")
+
+        if "mail" not in self._service_providers:
+            self._service_providers["mail"] = MailProvider(self, self.mail_config)
+            self._logger.debug("Mail provider initialized")
+
+        return self._service_providers["mail"]
+
     @property
     def db(self):
         return self._db_provider()
@@ -87,3 +100,7 @@ class FunderMapsSDK:
     @property
     def s3(self):
         return self._s3_provider()
+
+    @property
+    def mail(self):
+        return self._mail_provider()

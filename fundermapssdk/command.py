@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.config import DatabaseConfig, S3Config
+from fundermapssdk.config import DatabaseConfig, MailConfig, S3Config
 
 
 class FunderMapsCommand:
@@ -87,6 +87,33 @@ class FunderMapsCommand:
             "--s3-service-uri",
             default=os.environ.get("FUNDERMAPS_S3_SERVICE_URI"),
             help="S3 service URI (env: FUNDERMAPS_S3_SERVICE_URI)",
+        )
+
+        mail_group = parser.add_argument_group("Mail Configuration")
+        mail_group.add_argument(
+            "--mail-api-key",
+            default=os.environ.get("FUNDERMAPS_MAIL_API_KEY"),
+            help="Mailgun API key (env: FUNDERMAPS_MAIL_API_KEY)",
+        )
+        mail_group.add_argument(
+            "--mail-domain",
+            default=os.environ.get("FUNDERMAPS_MAIL_DOMAIN"),
+            help="Mailgun domain (env: FUNDERMAPS_MAIL_DOMAIN)",
+        )
+        mail_group.add_argument(
+            "--mail-base-url",
+            default=os.environ.get("FUNDERMAPS_MAIL_BASE_URL"),
+            help="Mailgun base URL (env: FUNDERMAPS_MAIL_BASE_URL)",
+        )
+        mail_group.add_argument(
+            "--mail-sender-name",
+            default=os.environ.get("FUNDERMAPS_MAIL_SENDER_NAME"),
+            help="Default sender name for emails (env: FUNDERMAPS_MAIL_SENDER_NAME)",
+        )
+        mail_group.add_argument(
+            "--mail-sender-address",
+            default=os.environ.get("FUNDERMAPS_MAIL_SENDER_ADDRESS"),
+            help="Default sender email address (env: FUNDERMAPS_MAIL_SENDER_ADDRESS)",
         )
 
         parser.add_argument(
@@ -199,8 +226,19 @@ class FunderMapsCommand:
             service_uri=self.args.s3_service_uri,
         )
 
+        mail_config = MailConfig(
+            api_key=self.args.mail_api_key,
+            domain=self.args.mail_domain,
+            base_url=self.args.mail_base_url,
+            sender_name=self.args.mail_sender_name,
+            sender_address=self.args.mail_sender_address,
+        )
+
         return FunderMapsSDK(
-            db_config=db_config, s3_config=s3_config, logger=self.logger
+            db_config=db_config,
+            s3_config=s3_config,
+            mail_config=mail_config,
+            logger=self.logger,
         )
 
     async def execute(self) -> None:

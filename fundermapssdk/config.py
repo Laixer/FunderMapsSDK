@@ -49,3 +49,23 @@ class PDFCoConfig:
     """
 
     api_key: str
+
+
+@dataclass
+class MailConfig:
+    """
+    MailConfig class represents the configuration for the Mailgun service.
+
+    Attributes:
+        api_key (str): The API key for Mailgun.
+        domain (str): The Mailgun domain to send emails from.
+        base_url (str): The base URL for the Mailgun API.
+        sender_name (str): The default sender name for emails sent through Mailgun.
+        sender_address (str): The default sender email address for emails sent through Mailgun.
+    """
+
+    api_key: str
+    domain: str
+    base_url: str
+    sender_name: str
+    sender_address: str
