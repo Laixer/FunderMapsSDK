@@ -288,7 +288,8 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
 
         # Create command arguments
         args = argparse.Namespace()
-        args.tileset = payload.get("tileset")
+        tileset_value = payload.get("tileset")
+        args.tileset = tileset_value if isinstance(tileset_value, list) else [tileset_value] if tileset_value else []
         args.max_workers = payload.get("max_workers", 3)
 
         # Run the command
@@ -466,7 +467,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
                     await asyncio.sleep(sleep_time)
                 except Exception as e:
                     self.logger.error(f"Error in processing cycle: {e}", exc_info=True)
-                    await asyncio.sleep(poll_interval)  # Sleep and try again
+                    await asyncio.sleep(poll_interval)
 
         except KeyboardInterrupt:
             self.logger.info("Received keyboard interrupt, shutting down")
