@@ -5,9 +5,9 @@ from fundermapssdk.mail import Email
 from fundermapssdk.command import FunderMapsCommand
 
 
-class TestMailCommand(FunderMapsCommand):
+class SendMailCommand(FunderMapsCommand):
     def __init__(self):
-        super().__init__(description="Test email sending functionality")
+        super().__init__(description="Send email functionality")
 
     def add_arguments(self, parser: argparse.ArgumentParser):
         """Add command-line arguments for the command."""
@@ -38,5 +38,5 @@ class TestMailCommand(FunderMapsCommand):
 
 
 if __name__ == "__main__":
-    exit_code = asyncio.run(TestMailCommand().run())
+    exit_code = asyncio.run(SendMailCommand().run())
     exit(exit_code)
