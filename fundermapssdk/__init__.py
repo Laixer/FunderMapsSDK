@@ -5,6 +5,7 @@ import logging
 from fundermapssdk.db import DbProvider
 from fundermapssdk.gdal import GDALProvider
 from fundermapssdk.mail import MailProvider
+from fundermapssdk.pdf import PDFProvider
 from fundermapssdk.config import DatabaseConfig, S3Config, PDFCoConfig, MailConfig
 from fundermapssdk.storage import ObjectStorageProvider
 
@@ -59,7 +60,7 @@ class FunderMapsSDK:
 
         return self._service_providers["db"]
 
-    def _gdal_provider(self):
+    def _gdal_provider(self) -> GDALProvider:
         if self.db_config is None:
             raise ValueError("Database configuration is not set")
 
@@ -69,7 +70,7 @@ class FunderMapsSDK:
 
         return self._service_providers["gdal"]
 
-    def _s3_provider(self):
+    def _s3_provider(self) -> ObjectStorageProvider:
         if self.s3_config is None:
             raise ValueError("S3 configuration is not set")
 
@@ -79,7 +80,7 @@ class FunderMapsSDK:
 
         return self._service_providers["s3"]
 
-    def _mail_provider(self):
+    def _mail_provider(self) -> MailProvider:
         if self.mail_config is None:
             raise ValueError("Mail configuration is not set")
 
@@ -89,18 +90,32 @@ class FunderMapsSDK:
 
         return self._service_providers["mail"]
 
+    def _pdf_provider(self) -> PDFProvider:
+        if self.pdf_config is None:
+            raise ValueError("PDF configuration is not set")
+
+        if "pdf" not in self._service_providers:
+            self._service_providers["pdf"] = PDFProvider(self, self.pdf_config)
+            self._logger.debug("PDF provider initialized")
+
+        return self._service_providers["pdf"]
+
     @property
-    def db(self):
+    def db(self) -> DbProvider:
         return self._db_provider()
 
     @property
-    def gdal(self):
+    def gdal(self) -> GDALProvider:
         return self._gdal_provider()
 
     @property
-    def s3(self):
+    def s3(self) -> ObjectStorageProvider:
         return self._s3_provider()
 
     @property
-    def mail(self):
+    def mail(self) -> MailProvider:
         return self._mail_provider()
+
+    @property
+    def pdf(self) -> PDFProvider:
+        return self._pdf_provider()
