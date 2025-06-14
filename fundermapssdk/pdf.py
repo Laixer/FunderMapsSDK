@@ -31,7 +31,7 @@ class PDFProvider:
             response = await client.post(url, headers=headers, data=parameters)
             response.raise_for_status()
 
-            self.__logger(logging.INFO, f"PDF generated from {url}")
+            self.__logger(logging.DEBUG, f"PDF generated from {url}")
 
             return response.json()
 
