@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from fundermapssdk import FunderMapsSDK
-from fundermapssdk.config import DatabaseConfig, MailConfig, S3Config
+from fundermapssdk.config import DatabaseConfig, MailConfig, PDFCoConfig, S3Config
 
 
 class FunderMapsCommand:
@@ -87,6 +87,13 @@ class FunderMapsCommand:
             "--s3-service-uri",
             default=os.environ.get("FUNDERMAPS_S3_SERVICE_URI"),
             help="S3 service URI (env: FUNDERMAPS_S3_SERVICE_URI)",
+        )
+
+        pdf_group = parser.add_argument_group("PDF Configuration")
+        pdf_group.add_argument(
+            "--pdf-api-key",
+            default=os.environ.get("FUNDERMAPS_PDF_API_KEY"),
+            help="PDF.co API key (env: FUNDERMAPS_PDF_API_KEY)",
         )
 
         mail_group = parser.add_argument_group("Mail Configuration")
@@ -226,6 +233,10 @@ class FunderMapsCommand:
             service_uri=self.args.s3_service_uri,
         )
 
+        pdf_config = PDFCoConfig(
+            api_key=self.args.pdf_api_key,
+        )
+
         mail_config = MailConfig(
             api_key=self.args.mail_api_key,
             domain=self.args.mail_domain,
@@ -237,6 +248,7 @@ class FunderMapsCommand:
         return FunderMapsSDK(
             db_config=db_config,
             s3_config=s3_config,
+            pdf_config=pdf_config,
             mail_config=mail_config,
             logger=self.logger,
         )
