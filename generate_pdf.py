@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import time
 import asyncio
 import argparse
@@ -38,13 +39,10 @@ class PDFGenerateCommand(FunderMapsCommand):
         from urllib.parse import urlparse
 
         parsed = urlparse(url)
-        domain = parsed.netloc.replace(".", "_")
         path = parsed.path.replace("/", "_").strip("_")
 
         if path:
-            return f"{domain}_{path}"
-        else:
-            return domain
+            return path
 
     def _ensure_output_directory(self) -> Path:
         """Ensure output directory exists and return Path object."""
@@ -75,6 +73,7 @@ class PDFGenerateCommand(FunderMapsCommand):
                 # Optionally download the PDF to local directory
                 if hasattr(self.args, "output_dir") and self.args.output_dir:
                     await self._download_pdf(pdf_url, output_name)
+                    self._upload_pdf(output_name)
 
             elapsed = time.time() - start_time
             self.logger.info(f"PDF generation completed in {elapsed:.2f}s")
@@ -109,6 +108,23 @@ class PDFGenerateCommand(FunderMapsCommand):
 
         except Exception as e:
             self.logger.error(f"Failed to download PDF: {e}", exc_info=True)
+            return False
+
+    def _upload_pdf(self, output_name: str) -> bool:
+        try:
+            self.logger.info(f"Uploading {output_name}.pdf to S3")
+
+            with self.fundermaps.s3 as s3:
+                s3_path = f"artifacts/report-pdf/{output_name}.pdf"
+                s3.upload_file(
+                    os.path.join("pdfs", f"{output_name}.pdf"),
+                    s3_path,
+                    bucket="fundermaps",
+                )
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Failed to upload PDF to S3: {e}", exc_info=True)
             return False
 
     async def execute(self) -> int:
