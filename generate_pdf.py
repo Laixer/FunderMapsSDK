@@ -29,18 +29,6 @@ class PDFGenerateCommand(FunderMapsCommand):
             help="Output directory for generated PDFs (default: ./pdfs)",
         )
 
-    def _setup_argument_parser(self) -> argparse.ArgumentParser:
-        """Set up argument parser with PDF-specific configuration."""
-        parser = super()._setup_argument_parser()
-
-        # Load PDF API key from environment if not provided
-        import os
-
-        if not hasattr(self.args, "pdf_api_key") or not self.args.pdf_api_key:
-            self.pdf_api_key = os.environ.get("FUNDERMAPS_PDF_API_KEY")
-
-        return parser
-
     def _generate_output_name(self, url: str) -> str:
         """Generate a default output name from URL if not provided."""
         if hasattr(self.args, "output_name") and self.args.output_name:
@@ -66,7 +54,7 @@ class PDFGenerateCommand(FunderMapsCommand):
 
     async def _generate_single_pdf(self, url: str, output_name: str) -> bool:
         """Generate a single PDF from URL."""
-        self.logger.info(f"Starting PDF generation from: {url}")
+        self.logger.info("Starting PDF generation")
         start_time = time.time()
 
         try:
@@ -82,7 +70,7 @@ class PDFGenerateCommand(FunderMapsCommand):
             # The PDF.co service returns the PDF URL in the response
             if "url" in result:
                 pdf_url = result["url"]
-                self.logger.info(f"PDF generated successfully: {pdf_url}")
+                self.logger.info("PDF generated successfully")
 
                 # Optionally download the PDF to local directory
                 if hasattr(self.args, "output_dir") and self.args.output_dir:
