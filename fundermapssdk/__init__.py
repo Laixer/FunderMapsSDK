@@ -1,5 +1,6 @@
 import os
 import logging
+from typing import Dict, Any, TypeVar
 
 
 from fundermapssdk.db import DbProvider
@@ -9,6 +10,8 @@ from fundermapssdk.pdf import PDFProvider
 from fundermapssdk.config import DatabaseConfig, S3Config, PDFCoConfig, MailConfig
 from fundermapssdk.storage import ObjectStorageProvider
 
+T = TypeVar("T")
+
 logger = logging.getLogger(__name__)
 
 
@@ -16,21 +19,28 @@ class FunderMapsSDK:
     """
     FunderMapsSDK class represents the main entry point for interacting with the FunderMaps SDK.
 
+    This class provides a unified interface to access various services including database operations,
+    GDAL/geospatial processing, object storage, email services, and PDF generation.
+
     Attributes:
-        mail_config (MailConfig | None): The configuration for the mail service. Defaults to None.
-        db_config (DatabaseConfig | None): The configuration for the database service. Defaults to None.
+        db_config (DatabaseConfig | None): Configuration for database operations.
+        s3_config (S3Config | None): Configuration for S3-compatible object storage.
+        pdf_config (PDFCoConfig | None): Configuration for PDF generation services.
+        mail_config (MailConfig | None): Configuration for email services.
+        sdk_directory (str): Directory path of the SDK installation.
 
-    Methods:
-        __init__(mail_config: MailConfig | None = None, db_config: DatabaseConfig | None = None):
-            Initializes a new instance of the FunderMapsSDK class.
-
-        db -> DbProvider:
-            Property that returns the database service provider.
+    Properties:
+        db (DbProvider): Database service provider.
+        gdal (GDALProvider): GDAL/geospatial service provider.
+        s3 (ObjectStorageProvider): Object storage service provider.
+        mail (MailProvider): Email service provider.
+        pdf (PDFProvider): PDF generation service provider.
     """
 
     db_config: DatabaseConfig | None
     s3_config: S3Config | None
     pdf_config: PDFCoConfig | None
+    mail_config: MailConfig | None
 
     def __init__(
         self,
@@ -47,75 +57,66 @@ class FunderMapsSDK:
         self.pdf_config = pdf_config
         self.mail_config = mail_config
 
-        self._service_providers = {}
+        self._service_providers: Dict[str, Any] = {}
         self._logger: logging.Logger = kwargs.get("logger", logger)
 
-    def _db_provider(self) -> DbProvider:
-        if self.db_config is None:
-            raise ValueError("Database configuration is not set")
+        # Provider configuration mapping
+        self._provider_configs = {
+            "db": (DbProvider, self.db_config, "Database configuration is not set"),
+            "gdal": (GDALProvider, self.db_config, "Database configuration is not set"),
+            "s3": (
+                ObjectStorageProvider,
+                self.s3_config,
+                "S3 configuration is not set",
+            ),
+            "mail": (MailProvider, self.mail_config, "Mail configuration is not set"),
+            "pdf": (PDFProvider, self.pdf_config, "PDF configuration is not set"),
+        }
 
-        if "db" not in self._service_providers:
-            self._service_providers["db"] = DbProvider(self, self.db_config)
-            self._logger.debug("Database provider initialized")
+    def _get_provider(self, provider_key: str) -> Any:
+        """
+        Generic method to get or create a service provider.
 
-        return self._service_providers["db"]
+        Args:
+            provider_key: The key identifying the provider type.
 
-    def _gdal_provider(self) -> GDALProvider:
-        if self.db_config is None:
-            raise ValueError("Database configuration is not set")
+        Returns:
+            The initialized service provider.
 
-        if "gdal" not in self._service_providers:
-            self._service_providers["gdal"] = GDALProvider(self, self.db_config)
-            self._logger.debug("GDAL provider initialized")
+        Raises:
+            ValueError: If the required configuration is not set.
+            KeyError: If the provider key is not recognized.
+        """
+        if provider_key not in self._provider_configs:
+            raise KeyError(f"Unknown provider: {provider_key}")
 
-        return self._service_providers["gdal"]
+        provider_class, config, error_message = self._provider_configs[provider_key]
 
-    def _s3_provider(self) -> ObjectStorageProvider:
-        if self.s3_config is None:
-            raise ValueError("S3 configuration is not set")
+        if config is None:
+            raise ValueError(error_message)
 
-        if "s3" not in self._service_providers:
-            self._service_providers["s3"] = ObjectStorageProvider(self, self.s3_config)
-            self._logger.debug("S3 provider initialized")
+        if provider_key not in self._service_providers:
+            self._service_providers[provider_key] = provider_class(self, config)
+            self._logger.debug(f"{provider_class.__name__} initialized")
 
-        return self._service_providers["s3"]
-
-    def _mail_provider(self) -> MailProvider:
-        if self.mail_config is None:
-            raise ValueError("Mail configuration is not set")
-
-        if "mail" not in self._service_providers:
-            self._service_providers["mail"] = MailProvider(self, self.mail_config)
-            self._logger.debug("Mail provider initialized")
-
-        return self._service_providers["mail"]
-
-    def _pdf_provider(self) -> PDFProvider:
-        if self.pdf_config is None:
-            raise ValueError("PDF configuration is not set")
-
-        if "pdf" not in self._service_providers:
-            self._service_providers["pdf"] = PDFProvider(self, self.pdf_config)
-            self._logger.debug("PDF provider initialized")
-
-        return self._service_providers["pdf"]
+        return self._service_providers[provider_key]
 
     @property
     def db(self) -> DbProvider:
-        return self._db_provider()
+        return self._get_provider("db")
 
     @property
     def gdal(self) -> GDALProvider:
-        return self._gdal_provider()
+        return self._get_provider("gdal")
 
     @property
     def s3(self) -> ObjectStorageProvider:
-        return self._s3_provider()
+        return self._get_provider("s3")
 
     @property
     def mail(self) -> MailProvider:
-        return self._mail_provider()
+        return self._get_provider("mail")
 
     @property
     def pdf(self) -> PDFProvider:
-        return self._pdf_provider()
+        return self._get_provider("pdf")
