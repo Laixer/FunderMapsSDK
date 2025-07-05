@@ -93,6 +93,22 @@ class GDALProvider:
                 ]
             )
 
+        if os.path.splitext(input)[1] == ".csv":
+            if "semicolon" in os.path.basename(input).lower():
+                cmd_args.extend(
+                    [
+                        "-oo",
+                        "SEPARATOR=SEMICOLON",
+                    ]
+                )
+            elif "pipe" in os.path.basename(input).lower():
+                cmd_args.extend(
+                    [
+                        "-oo",
+                        "SEPARATOR=PIPE",
+                    ]
+                )
+
         process = await asyncio.create_subprocess_exec(
             "ogr2ogr",
             *cmd_args,
