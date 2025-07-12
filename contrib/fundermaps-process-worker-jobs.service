@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=simple
 Environment="IMAGE=fundermaps-sdk:latest"
-ExecStart=/usr/bin/docker run --rm --name fundermaps-process-worker-jobs --env-file /etc/fundermaps/config.env ${IMAGE} process_worker_jobs.py --poll-interval 60 --max-concurrent 1 --job-types load_dataset export_product send_mail process_mapset --log-simple
+ExecStart=/usr/bin/docker run --rm --name fundermaps-process-worker-jobs --env-file /etc/fundermaps/config.env ${IMAGE} process_worker_jobs.py --poll-interval 60 --max-concurrent 1 --job-types load_dataset export_product send_mail process_mapset generate_pdf --log-simple
 SyslogIdentifier=fundermaps-process-worker-jobs
 Restart=on-failure
 RestartSec=30s
