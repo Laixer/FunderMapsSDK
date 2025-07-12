@@ -291,7 +291,11 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         # Create command arguments
         args = argparse.Namespace()
         tileset_value = payload.get("tileset")
-        args.tileset = tileset_value if isinstance(tileset_value, list) else [tileset_value] if tileset_value else []
+        args.tileset = (
+            tileset_value
+            if isinstance(tileset_value, list)
+            else [tileset_value] if tileset_value else []
+        )
         args.max_workers = payload.get("max_workers", 3)
 
         # Run the command
