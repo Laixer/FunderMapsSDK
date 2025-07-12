@@ -224,6 +224,8 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
                 return await self._process_cleanup_storage_job(job_id, payload)
             elif job_type == "export_product":
                 return await self._process_export_product_job(job_id, payload)
+            elif job_type == "generate_pdf":
+                return await self._generate_single_pdf(job_id, payload)
             elif job_type == "send_mail":
                 return await self._process_send_mail_job(job_id, payload)
             else:
@@ -333,6 +335,24 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
 
         # Run the command
         command = ProductExportCommand()
+        command.args = args
+        command.fundermaps = self.fundermaps
+        command.logger = self.logger
+
+        return await command.execute() == 0
+
+    async def _generate_single_pdf(self, job_id: int, payload: Dict[str, Any]) -> bool:
+        """Generate a single PDF from a URL."""
+        from generate_pdf import PDFGenerateCommand
+
+        self.logger.info(f"Running generate_pdf job {job_id}")
+
+        # Create command arguments
+        args = argparse.Namespace()
+        args.url = payload.get("url")
+
+        # Run the command
+        command = PDFGenerateCommand()
         command.args = args
         command.fundermaps = self.fundermaps
         command.logger = self.logger
