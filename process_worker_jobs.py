@@ -72,6 +72,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
                     WHERE 
                         status = 'pending'
                         AND (process_after IS NULL OR process_after <= %s)
+                        AND (max_retries = 0 OR retry_count < max_retries)
                 """
                 params = [now]
 
@@ -167,7 +168,8 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
                     new_retry_count = retry_count + 1
 
                     # Determine if we can retry
-                    can_retry = retry and new_retry_count <= max_retries
+                    # Can retry if: retry is enabled AND (max_retries is 0 (unlimited) OR retry_count < max_retries)
+                    can_retry = retry and (max_retries == 0 or retry_count < max_retries)
                     new_status = "pending" if can_retry else "failed"
 
                     # Calculate next process time if retrying (exponential backoff)
@@ -176,9 +178,15 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
                         # Simple exponential backoff: 30s, 2m, 8m, etc.
                         backoff_seconds = 30 * (2 ** (new_retry_count - 1))
                         process_after = f"NOW() + INTERVAL '{backoff_seconds} seconds'"
-                        self.logger.info(
-                            f"Scheduling job {job_id} for retry in {backoff_seconds}s (attempt {new_retry_count}/{max_retries})"
-                        )
+                        
+                        if max_retries == 0:
+                            self.logger.info(
+                                f"Scheduling job {job_id} for retry in {backoff_seconds}s (attempt {new_retry_count}, unlimited retries)"
+                            )
+                        else:
+                            self.logger.info(
+                                f"Scheduling job {job_id} for retry in {backoff_seconds}s (attempt {new_retry_count}/{max_retries})"
+                            )
 
                     # Update the job
                     query = f"""
