@@ -354,6 +354,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         # Create command arguments
         args = argparse.Namespace()
         args.url = payload.get("url")
+        args.output_dir = "./pdfs" # TODO: This is a hack
 
         # Run the command
         command = PDFGenerateCommand()

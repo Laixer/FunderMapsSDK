@@ -70,10 +70,8 @@ class PDFGenerateCommand(FunderMapsCommand):
                 pdf_url = result["url"]
                 self.logger.info("PDF generated successfully")
 
-                # Optionally download the PDF to local directory
-                if hasattr(self.args, "output_dir") and self.args.output_dir:
-                    await self._download_pdf(pdf_url, output_name)
-                    self._upload_pdf(output_name)
+                await self._download_pdf(pdf_url, output_name)
+                self._upload_pdf(output_name)
 
             elapsed = time.time() - start_time
             self.logger.info(f"PDF generation completed in {elapsed:.2f}s")
