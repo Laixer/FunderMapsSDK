@@ -16,5 +16,7 @@ Dockerfile
 .dockerignore
 
 # Ignore any other unnecessary files
-*.md
 *.example
+
+# Ignore the Python virtual environment
+.venv
