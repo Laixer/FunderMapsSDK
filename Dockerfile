@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim AS builder
+FROM debian:stable-slim AS builder
 
 # Install build dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
