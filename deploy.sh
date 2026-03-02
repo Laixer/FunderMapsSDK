@@ -11,11 +11,6 @@ echo -e "${GREEN}Starting FunderMaps SDK deployment...${NC}"
 # Build Docker container
 echo -e "${YELLOW}Building Docker container...${NC}"
 docker build -t fundermaps-sdk .
-
-if [ $? -ne 0 ]; then
-    echo "Docker build failed!"
-    exit 1
-fi
 echo -e "${GREEN}Docker container built successfully!${NC}"
 
 # Check if contrib directory exists

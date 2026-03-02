@@ -19,7 +19,7 @@ RUN git clone --depth 1 https://github.com/felt/tippecanoe.git \
 #-----------------------------------------------------------------------------
 
 # Final stage
-FROM ghcr.io/astral-sh/uv:debian-slim
+FROM ghcr.io/astral-sh/uv:0.10-debian-slim
 
 # Define arguments for user/group IDs for better permission handling
 ARG UID=1001
