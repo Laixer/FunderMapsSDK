@@ -114,18 +114,19 @@ class ObjectStorageProvider:
         """
         import os
         import threading
+        from pathlib import Path, PurePosixPath
 
         file_paths = []
         for root, _, files in os.walk(directory_path):
             for file in files:
-                file_paths.append(os.path.join(root, file))
+                file_paths.append(Path(root) / file)
 
         self._upload_count = 0
         self._upload_count_lock = threading.Lock()
 
         def _upload_file(local_path):
             rel_path = os.path.relpath(local_path, directory_path)
-            s3_key = os.path.join(key, rel_path).replace("\\", "/")
+            s3_key = str(PurePosixPath(key, rel_path))
 
             self.client.upload_file(
                 local_path, bucket or self.config.bucket, s3_key, extra_args
@@ -133,8 +134,8 @@ class ObjectStorageProvider:
             with self._upload_count_lock:
                 self._upload_count += 1
 
-        MAX_THREADS = 10
-        with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
+        max_threads = 10
+        with ThreadPoolExecutor(max_workers=max_threads) as executor:
             executor.map(_upload_file, file_paths)
 
         if self._upload_count != len(file_paths):

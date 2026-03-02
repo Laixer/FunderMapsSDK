@@ -1,6 +1,7 @@
-import csv
 import asyncio
+import csv
 from datetime import datetime
+from pathlib import Path
 
 from fundermapssdk.command import FunderMapsCommand
 
@@ -34,39 +35,38 @@ class ProductExportCommand(FunderMapsCommand):
         """Process export for a specific organization."""
         self.logger.info("Exporting product tracker data")
 
-        with self.fundermaps.db as db:
-            with db.db.cursor() as cur:
-                query = """
-                    SELECT
-                            pt.organization_id,
-                            pt.product,
-                            pt.building_id,
-                            b.external_id,
-                            pt.create_date,
-                            pt.identifier AS request
-                    FROM    application.product_tracker AS pt
-                    JOIN    geocoder.building AS b ON b.id = pt.building_id
-                    WHERE   pt.organization_id = %s
-                    AND     pt.create_date >= date_trunc('month', %s) - interval '1 month'
-                    AND     pt.create_date < date_trunc('month', %s)"""
+        with self.fundermaps.db as db, db.db.cursor() as cur:
+            query = """
+                SELECT
+                        pt.organization_id,
+                        pt.product,
+                        pt.building_id,
+                        b.external_id,
+                        pt.create_date,
+                        pt.identifier AS request
+                FROM    application.product_tracker AS pt
+                JOIN    geocoder.building AS b ON b.id = pt.building_id
+                WHERE   pt.organization_id = %s
+                AND     pt.create_date >= date_trunc('month', %s) - interval '1 month'
+                AND     pt.create_date < date_trunc('month', %s)"""
 
-                cur.execute(query, (organization, reference_date, reference_date))
+            cur.execute(query, (organization, reference_date, reference_date))
 
-                csv_file = f"{organization}.csv"
+            csv_file = f"{organization}.csv"
 
-                # TODO: Maybe create a CSV writer helper function in the SDK
-                column_names = [desc[0] for desc in cur.description]
+            # TODO: Maybe create a CSV writer helper function in the SDK
+            column_names = [desc[0] for desc in cur.description]
 
-                self.logger.info(f"Writing data to {csv_file}")
-                with open(csv_file, mode="w", newline="") as file:
-                    writer = csv.writer(file)
+            self.logger.info(f"Writing data to {csv_file}")
+            with Path(csv_file).open(mode="w", newline="") as file:
+                writer = csv.writer(file)
 
-                    writer.writerow(column_names)
+                writer.writerow(column_names)
 
-                    data_written = False
-                    for row in cur:
-                        writer.writerow(row)
-                        data_written = True
+                data_written = False
+                for row in cur:
+                    writer.writerow(row)
+                    data_written = True
 
         if data_written:
             with self.fundermaps.s3 as s3:

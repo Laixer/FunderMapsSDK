@@ -1,5 +1,5 @@
 import logging
-import os
+from pathlib import Path
 from typing import Any
 
 from fundermapssdk.config import DatabaseConfig, MailConfig, PDFCoConfig, S3Config
@@ -47,7 +47,7 @@ class FunderMapsSDK:
         mail_config: MailConfig | None = None,
         **kwargs,
     ):
-        self.sdk_directory = os.path.dirname(os.path.realpath(__file__))
+        self.sdk_directory = Path(__file__).resolve().parent
 
         self.db_config = db_config
         self.s3_config = s3_config

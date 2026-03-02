@@ -1,10 +1,10 @@
 import argparse
 import asyncio
-import os
 import random
 import tempfile
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from fundermapssdk import util
 from fundermapssdk.command import FunderMapsCommand
@@ -54,7 +54,7 @@ class ProcessMapsetCommand(FunderMapsCommand):
     ) -> bool:
         self.logger.info(f"Downloading '{context.tileset.tileset}' from PostGIS")
 
-        output_file = os.path.join(context.work_dir, f"{context.tileset.tileset}.gpkg")
+        output_file = Path(context.work_dir) / f"{context.tileset.tileset}.gpkg"
 
         for attempt in range(1, MAX_RETRIES + 1):
             try:
@@ -85,14 +85,14 @@ class ProcessMapsetCommand(FunderMapsCommand):
                 f"Converting tileset '{context.tileset.tileset}' to GeoJSON"
             )
             await self.fundermaps.gdal.ogr2ogr(
-                os.path.join(context.work_dir, f"{context.tileset.tileset}.gpkg"),
-                os.path.join(context.work_dir, f"{context.tileset.tileset}.geojson"),
+                Path(context.work_dir) / f"{context.tileset.tileset}.gpkg",
+                Path(context.work_dir) / f"{context.tileset.tileset}.geojson",
             )
 
             self.logger.info(f"Generating tileset '{context.tileset.tileset}'")
             await tippecanoe(
-                os.path.join(context.work_dir, f"{context.tileset.tileset}.geojson"),
-                os.path.join(context.work_dir, context.tileset.tileset),
+                Path(context.work_dir) / f"{context.tileset.tileset}.geojson",
+                Path(context.work_dir) / context.tileset.tileset,
                 context.tileset.tileset,
                 context.tileset.max_zoom,
                 context.tileset.min_zoom,
@@ -115,7 +115,7 @@ class ProcessMapsetCommand(FunderMapsCommand):
             with self.fundermaps.s3 as s3:
                 s3_path = f"mapset/{util.date_path()}/{context.tileset.tileset}.gpkg"
                 s3.upload_file(
-                    os.path.join(context.work_dir, f"{context.tileset.tileset}.gpkg"),
+                    Path(context.work_dir) / f"{context.tileset.tileset}.gpkg",
                     s3_path,
                     bucket="fundermaps-data",
                 )
@@ -139,7 +139,7 @@ class ProcessMapsetCommand(FunderMapsCommand):
                 )
                 for file_path in non_tile_files:
                     try:
-                        os.remove(file_path)
+                        Path(file_path).unlink()
                         self.logger.debug(f"Removed file: {file_path}")
                     except OSError as e:
                         self.logger.warning(f"Failed to remove file {file_path}: {e}")
@@ -177,16 +177,15 @@ class ProcessMapsetCommand(FunderMapsCommand):
                 tileset.processing_time = time.time() - start_time
                 return success
 
-            if tileset.upload_dataset:
-                if not self._upload_dataset(ctx):
-                    success = False
+            if tileset.upload_dataset and not self._upload_dataset(ctx):
+                success = False
 
             if tileset.generate_tiles and success:
                 if not await self._generate_tileset(ctx):
                     success = False
                 else:
                     success = await self._upload_tiles(
-                        tileset, os.path.join(tmp_dir, tileset.tileset)
+                        tileset, Path(tmp_dir) / tileset.tileset
                     )
 
         tileset.processing_time = time.time() - start_time
@@ -252,14 +251,14 @@ class ProcessMapsetCommand(FunderMapsCommand):
                     placeholders = ", ".join(["%s"] * len(requested_tilesets))
                     query = f"""
                         SELECT
-                            tileset, 
-                            zoom_min_level, 
-                            zoom_max_level, 
+                            tileset,
+                            zoom_min_level,
+                            zoom_max_level,
                             generate_tileset,
                             upload_dataset
                         FROM maplayer.bundle
                         WHERE enabled = TRUE AND tileset IN ({placeholders})
-                    """
+                    """  # noqa: S608
 
                     with db.db.cursor() as cur:
                         cur.execute(query, list(requested_tilesets))
@@ -294,9 +293,9 @@ class ProcessMapsetCommand(FunderMapsCommand):
                     with db.db.cursor() as cur:
                         query = """
                             SELECT
-                                tileset, 
-                                zoom_min_level, 
-                                zoom_max_level, 
+                                tileset,
+                                zoom_min_level,
+                                zoom_max_level,
                                 generate_tileset,
                                 upload_dataset
                             FROM maplayer.bundle

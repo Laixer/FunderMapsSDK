@@ -1,7 +1,6 @@
-import glob
 import gzip
-import os
 import shutil
+from pathlib import Path
 
 import httpx
 
@@ -22,12 +21,13 @@ async def http_download_file(url, dest_path):
 
     """
 
-    if os.path.exists(dest_path):
-        os.remove(dest_path)
+    dest = Path(dest_path)
+    if dest.exists():
+        dest.unlink()
 
     async with httpx.AsyncClient() as client, client.stream("GET", url) as response:
         response.raise_for_status()
-        with open(dest_path, "wb") as file:
+        with dest.open("wb") as file:
             async for chunk in response.aiter_bytes():
                 file.write(chunk)
 
@@ -42,10 +42,8 @@ def remove_files(directory, extension):
         extension (str): The extension of the files to remove.
     """
 
-    files = glob.glob(os.path.join(directory, f"*{extension}"))
-
-    for file_path in files:
-        os.remove(file_path)
+    for file_path in Path(directory).glob(f"*{extension}"):
+        file_path.unlink()
 
 
 def collect_files_with_extension(directory, extension) -> list:
@@ -61,14 +59,10 @@ def collect_files_with_extension(directory, extension) -> list:
     """
     collected_files = []
 
-    for root, _, files in os.walk(directory):
-        for filename in files:
-            file_ext = os.path.splitext(filename)[1]
-            if file_ext != extension:
-                continue
-
-            local_path = os.path.join(root, filename)
-            collected_files.append(local_path)
+    for local_path in Path(directory).rglob(f"*{extension}"):
+        if local_path.suffix != extension:
+            continue
+        collected_files.append(str(local_path))
 
     return collected_files
 
@@ -86,10 +80,11 @@ def validate_file_size(file_path, min_size):
         ValueError: If the file size is below the minimum size.
     """
 
-    if not os.path.exists(file_path):
+    p = Path(file_path)
+    if not p.exists():
         raise FileNotFoundError("File not found")
 
-    if os.path.getsize(file_path) < min_size:
+    if p.stat().st_size < min_size:
         raise ValueError("File is below the minimum")
 
 
@@ -105,7 +100,7 @@ def validate_file_extension(file_path, allowed_extensions):
         ValueError: If the file extension is not in the allowed extensions list.
     """
 
-    file_extension = os.path.splitext(file_path)[1]
+    file_extension = Path(file_path).suffix
 
     if file_extension not in allowed_extensions:
         raise ValueError("File extension is not allowed")
@@ -143,7 +138,7 @@ def compress_file(file_path, output_path):
         output_path (str): The path where the compressed file will be saved.
     """
 
-    with open(file_path, "rb") as f_in, gzip.open(output_path, "wb") as f_out:
+    with Path(file_path).open("rb") as f_in, gzip.open(output_path, "wb") as f_out:
         shutil.copyfileobj(f_in, f_out)
 
 
@@ -155,5 +150,5 @@ def decompress_file(file_path, output_path):
         file_path (str): The path to the gzip file to decompress.
         output_path (str): The path where the decompressed file will be saved.
     """
-    with gzip.open(file_path, "rb") as f_in, open(output_path, "wb") as f_out:
+    with gzip.open(file_path, "rb") as f_in, Path(output_path).open("wb") as f_out:
         shutil.copyfileobj(f_in, f_out)

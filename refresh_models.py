@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import time
-import asyncio
 import argparse
+import asyncio
+import time
 
 from fundermapssdk.command import FunderMapsCommand
 

@@ -3,7 +3,7 @@
 import argparse
 import asyncio
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from fundermapssdk.command import FunderMapsCommand
@@ -60,33 +60,32 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
             List of job dictionaries
         """
         self.logger.debug("Fetching pending jobs")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
-        with self.fundermaps.db as db:
-            with db.db.cursor() as cur:
-                query = """
-                    SELECT 
+        with self.fundermaps.db as db, db.db.cursor() as cur:
+            query = """
+                    SELECT
                         id, job_type, payload, priority, retry_count, max_retries
-                    FROM 
+                    FROM
                         application.worker_jobs
-                    WHERE 
+                    WHERE
                         status = 'pending'
                         AND (process_after IS NULL OR process_after <= %s)
                         AND (max_retries = 0 OR retry_count < max_retries)
                 """
-                params = [now]
+            params = [now]
 
-                if job_types and len(job_types) > 0:
-                    placeholders = ", ".join(["%s"] * len(job_types))
-                    query += f" AND job_type IN ({placeholders})"
-                    params.extend(job_types)
+            if job_types and len(job_types) > 0:
+                placeholders = ", ".join(["%s"] * len(job_types))
+                query += f" AND job_type IN ({placeholders})"
+                params.extend(job_types)
 
-                query += " ORDER BY priority DESC, created_at ASC"
-                cur.execute(query, params)
+            query += " ORDER BY priority DESC, created_at ASC"
+            cur.execute(query, params)
 
-                # Convert rows to dictionaries
-                columns = [desc[0] for desc in cur.description]
-                return [dict(zip(columns, row)) for row in cur.fetchall()]
+            # Convert rows to dictionaries
+            columns = [desc[0] for desc in cur.description]
+            return [dict(zip(columns, row, strict=False)) for row in cur.fetchall()]
 
     async def _mark_job_in_progress(self, job_id: int) -> bool:
         """
@@ -100,18 +99,17 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         """
         self.logger.debug(f"Marking job {job_id} as in-progress")
         try:
-            with self.fundermaps.db as db:
-                with db.db.cursor() as cur:
-                    query = """
+            with self.fundermaps.db as db, db.db.cursor() as cur:
+                query = """
                         UPDATE application.worker_jobs
                         SET status = 'processing', updated_at = NOW()
                         WHERE id = %s AND status = 'pending'
                         RETURNING id
                     """
-                    cur.execute(query, (job_id,))
-                    result = cur.fetchone()
-                    db.db.commit()
-                    return result is not None
+                cur.execute(query, (job_id,))
+                result = cur.fetchone()
+                db.db.commit()
+                return result is not None
         except Exception as e:
             self.logger.error(f"Failed to mark job {job_id} as in-progress: {e}")
             return False
@@ -125,15 +123,14 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         """
         self.logger.info(f"Marking job {job_id} as completed")
         try:
-            with self.fundermaps.db as db:
-                with db.db.cursor() as cur:
-                    query = """
+            with self.fundermaps.db as db, db.db.cursor() as cur:
+                query = """
                         UPDATE application.worker_jobs
                         SET status = 'completed', updated_at = NOW()
                         WHERE id = %s
                     """
-                    cur.execute(query, (job_id,))
-                    db.db.commit()
+                cur.execute(query, (job_id,))
+                db.db.commit()
         except Exception as e:
             self.logger.error(f"Failed to mark job {job_id} as completed: {e}")
 
@@ -150,8 +147,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         """
         self.logger.warning(f"Marking job {job_id} as failed: {error}")
         try:
-            with self.fundermaps.db as db:
-                with db.db.cursor() as cur:
+            with self.fundermaps.db as db, db.db.cursor() as cur:
                     # First, get current retry information
                     cur.execute(
                         "SELECT retry_count, max_retries FROM application.worker_jobs WHERE id = %s",
@@ -178,7 +174,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
                         # Simple exponential backoff: 30s, 2m, 8m, etc.
                         backoff_seconds = 30 * (2 ** (new_retry_count - 1))
                         process_after = f"NOW() + INTERVAL '{backoff_seconds} seconds'"
-                        
+
                         if max_retries == 0:
                             self.logger.info(
                                 f"Scheduling job {job_id} for retry in {backoff_seconds}s (attempt {new_retry_count}, unlimited retries)"
@@ -191,14 +187,14 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
                     # Update the job
                     query = f"""
                         UPDATE application.worker_jobs
-                        SET 
-                            status = %s, 
+                        SET
+                            status = %s,
                             retry_count = %s,
                             last_error = %s,
                             process_after = {process_after if process_after else 'NULL'},
                             updated_at = NOW()
                         WHERE id = %s
-                    """
+                    """  # noqa: S608
                     cur.execute(query, (new_status, new_retry_count, error, job_id))
                     db.db.commit()
         except Exception as e:
@@ -446,7 +442,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
                         await self._mark_job_failed(
                             job_id, "Job processing returned failure"
                         )
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     self.logger.error(f"Job {job_id} timed out after {timeout} seconds")
                     await self._mark_job_failed(
                         job_id, f"Job execution timed out after {timeout} seconds"

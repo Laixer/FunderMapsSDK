@@ -1,6 +1,6 @@
 import asyncio
 import logging
-import os
+from pathlib import Path
 
 from fundermapssdk.config import DatabaseConfig
 
@@ -64,12 +64,13 @@ class GDALProvider:
         return await self.ogr2ogr(input, output, *args)
 
     async def ogr2ogr(self, input: str, output: str, *args) -> bool:
-        is_file = os.path.isfile(input)
+        input_path = Path(input)
+        is_file = input_path.is_file()
 
-        if is_file and not os.path.exists(input):
+        if is_file and not input_path.exists():
             raise FileNotFoundError("File not found")
 
-        if os.path.splitext(input)[1] == ".zip":
+        if input_path.suffix == ".zip":
             input = f"/vsizip/{input}"
 
         if output.startswith("PG:"):
@@ -96,15 +97,15 @@ class GDALProvider:
                 ]
             )
 
-        if os.path.splitext(input)[1] == ".csv":
-            if "semicolon" in os.path.basename(input).lower():
+        if input_path.suffix == ".csv":
+            if "semicolon" in input_path.name.lower():
                 cmd_args.extend(
                     [
                         "-oo",
                         "SEPARATOR=SEMICOLON",
                     ]
                 )
-            elif "pipe" in os.path.basename(input).lower():
+            elif "pipe" in input_path.name.lower():
                 cmd_args.extend(
                     [
                         "-oo",

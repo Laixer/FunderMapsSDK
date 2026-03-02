@@ -1,5 +1,5 @@
 import logging
-import os
+from pathlib import Path
 
 import psycopg2
 
@@ -15,7 +15,7 @@ class DbProvider:
         self.db = None
         self.logger = logger
 
-        self.sql_directory = os.path.join(self._sdk.sdk_directory, "sql")
+        self.sql_directory = Path(self._sdk.sdk_directory) / "sql"
 
     def reindex_table(self, table: str):
         """
@@ -86,9 +86,9 @@ class DbProvider:
         sql_file_path = f"{script}.sql"
         self.logger.debug(f"Running SQL script: {sql_file_path}")
 
-        file_path = os.path.join(self.sql_directory, sql_file_path)
+        file_path = self.sql_directory / sql_file_path
 
-        with open(file_path) as sql_file:
+        with file_path.open() as sql_file:
             sql_script = sql_file.read()
 
             with self.db.cursor() as cur:

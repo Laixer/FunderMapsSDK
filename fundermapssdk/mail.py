@@ -35,10 +35,10 @@ class Email:
 class MailProvider:
     """
     Provider for sending emails via the Mailgun API.
-    
+
     This class encapsulates the functionality for configuring and sending emails
     through the Mailgun service.
-    
+
     Attributes:
         _sdk: Reference to the parent SDK instance
         config: Mail configuration settings
@@ -60,16 +60,16 @@ class MailProvider:
     def send_simple_message(self, email: Email):
         """
         Send a simple text email message using the Mailgun API.
-        
+
         This method handles the formatting of the email parameters and sending the request
         to the Mailgun API. It also handles logging and error reporting.
-        
+
         Args:
             email: An Email object containing recipient, subject, and content information
-            
+
         Raises:
             Exception: If the email fails to send due to API errors
-            
+
         Returns:
             None
         """

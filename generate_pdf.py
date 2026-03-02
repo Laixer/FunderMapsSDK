@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-import os
-import time
-import asyncio
 import argparse
+import asyncio
+import time
 from pathlib import Path
 
 from fundermapssdk.command import FunderMapsCommand
@@ -98,7 +97,7 @@ class PDFGenerateCommand(FunderMapsCommand):
                 response = await client.get(pdf_url)
                 response.raise_for_status()
 
-                with open(output_path, "wb") as f:
+                with output_path.open("wb") as f:
                     f.write(response.content)
 
                 self.logger.info(f"PDF downloaded successfully: {output_path}")
@@ -115,7 +114,7 @@ class PDFGenerateCommand(FunderMapsCommand):
             with self.fundermaps.s3 as s3:
                 s3_path = f"artifacts/report-pdf/{output_name}.pdf"
                 s3.upload_file(
-                    os.path.join("pdfs", f"{output_name}.pdf"),
+                    str(Path("pdfs") / f"{output_name}.pdf"),
                     s3_path,
                     bucket="fundermaps",
                 )

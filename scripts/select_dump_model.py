@@ -1,8 +1,8 @@
 import csv
 import logging
+from pathlib import Path
 
 from fundermapssdk import FunderMapsSDK, app
-
 
 BUCKET: str = "fundermaps"
 OUTPUT_FILE_NAME: str = "analysis_full.gpkg"
@@ -20,7 +20,7 @@ async def run(fundermaps: FunderMapsSDK, args):
     # file_path = "/home/yorick/Downloads/SAM_2024_03.csv"
     file_path = args[0]
 
-    with open(file_path, "r") as file:
+    with Path(file_path).open() as file:
         reader = csv.reader(file)
 
         with fundermaps.db as db:
@@ -32,7 +32,7 @@ async def run(fundermaps: FunderMapsSDK, args):
                     if len(row[0]) == 16:
                         # TODO: Use copy
                         insert_query = (
-                            f"INSERT INTO model_supply (building_id) VALUES (%s)"
+                            "INSERT INTO model_supply (building_id) VALUES (%s)"
                         )
                         building_id = f"NL.IMBAG.PAND.{row[0]}"
                         cur.execute(insert_query, (building_id,))
@@ -46,12 +46,12 @@ async def run(fundermaps: FunderMapsSDK, args):
 
                 cur.execute(query)
 
-                csv_file = f"model_supply.csv"
+                csv_file = "model_supply.csv"
 
                 column_names = [desc[0] for desc in cur.description]
 
                 logger.info(f"Writing data to {csv_file}")
-                with open(csv_file, mode="w", newline="") as file:
+                with Path(csv_file).open(mode="w", newline="") as file:
                     writer = csv.writer(file)
 
                     writer.writerow(column_names)

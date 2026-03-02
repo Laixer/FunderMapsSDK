@@ -1,7 +1,8 @@
 import argparse
 import asyncio
-import os
+import contextlib
 import tempfile
+from pathlib import Path
 
 from fundermapssdk import util
 from fundermapssdk.command import FunderMapsCommand
@@ -65,11 +66,11 @@ class LoadDatasetCommand(FunderMapsCommand):
                 temp_dir = tempfile.mkdtemp(prefix="fundermaps_load_")
                 tmp_dir = temp_dir
             else:
-                os.makedirs(tmp_dir, exist_ok=True)
+                Path(tmp_dir).mkdir(parents=True, exist_ok=True)
 
             # Get the filename from the path
-            file_name = os.path.basename(dataset_input)
-            local_file_path = os.path.join(tmp_dir, file_name)
+            file_name = Path(dataset_input).name
+            local_file_path = str(Path(tmp_dir) / file_name)
 
             # Handle different input sources
             if dataset_input.startswith("https://") or dataset_input.startswith(
@@ -98,7 +99,7 @@ class LoadDatasetCommand(FunderMapsCommand):
 
             else:
                 # Local file - verify it exists
-                if not os.path.exists(dataset_input):
+                if not Path(dataset_input).exists():
                     self.logger.error(f"Local file not found: {dataset_input}")
                     return False
                 local_file_path = dataset_input
@@ -150,17 +151,15 @@ class LoadDatasetCommand(FunderMapsCommand):
                 and local_file_path != dataset_input
             ):
                 try:
-                    if os.path.exists(local_file_path):
-                        os.remove(local_file_path)
+                    if Path(local_file_path).exists():
+                        Path(local_file_path).unlink()
                 except Exception as e:
                     self.logger.warning(f"Failed to delete temporary file: {e}")
 
             # Clean up temp dir if we created it
             if use_temp_dir and tmp_dir:
-                try:
-                    os.rmdir(tmp_dir)
-                except:
-                    pass
+                with contextlib.suppress(OSError):
+                    Path(tmp_dir).rmdir()
 
     async def execute(self) -> int:
         """Execute the load dataset command."""

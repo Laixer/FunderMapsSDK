@@ -26,7 +26,7 @@ class FunderMapsCommand:
         dotenv_paths = [
             Path(".env"),
             Path(".env.local"),
-            Path(os.path.dirname(os.path.abspath(__file__))) / ".." / ".env",
+            Path(__file__).resolve().parent.parent / ".env",
             Path("/etc/fundermaps/config.env"),
         ]
 

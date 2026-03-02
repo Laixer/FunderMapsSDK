@@ -1,8 +1,8 @@
-import asyncio
 import argparse
+import asyncio
 
-from fundermapssdk.mail import Email
 from fundermapssdk.command import FunderMapsCommand
+from fundermapssdk.mail import Email
 
 
 class SendMailCommand(FunderMapsCommand):
