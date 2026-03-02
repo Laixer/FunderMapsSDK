@@ -3,11 +3,15 @@ Email functionality for FunderMapsSDK.
 
 This module provides email sending capabilities using the Mailgun API.
 """
+
 import logging
 from dataclasses import dataclass
+
 from mailgun.client import Client
 
 from fundermapssdk.config import MailConfig
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -43,13 +47,14 @@ class MailProvider:
     def __init__(self, sdk, config: MailConfig):
         """
         Initialize the mail provider with SDK reference and configuration.
-        
+
         Args:
             sdk: The parent SDK instance that contains the logger
             config: Mail configuration containing API key, domain, and sender info
         """
         self._sdk = sdk
         self.config = config
+        self.logger = logger
         self.client = Client(auth=("api", config.api_key), api_url=config.base_url)
 
     def send_simple_message(self, email: Email):
@@ -68,7 +73,7 @@ class MailProvider:
         Returns:
             None
         """
-        self.__logger(logging.DEBUG, f"Sending email to {email.to}")
+        self.logger.debug(f"Sending email to {email.to}")
 
         from_ = (
             email.from_ or f"{self.config.sender_name} <{self.config.sender_address}>"
@@ -82,7 +87,7 @@ class MailProvider:
             "text": email.text,
         }
 
-        self.__logger(logging.INFO, f"Email parameters: {message_params}")
+        self.logger.info(f"Email parameters: {message_params}")
 
         try:
             response = self.client.messages.create(
@@ -92,24 +97,11 @@ class MailProvider:
             if response.status_code == 200:
                 response_data = response.json()
                 message_id = response_data.get("id", "unknown")
-                self.__logger(logging.DEBUG, f"Email sent successfully: {message_id}")
+                self.logger.debug(f"Email sent successfully: {message_id}")
             else:
                 response_data = response.json()
                 message = response_data.get("message", "No message provided")
                 raise Exception(f"Failed to send email: {message}")
         except Exception as e:
-            self.__logger(logging.ERROR, f"Failed to send email to {to}: {e}")
+            self.logger.error(f"Failed to send email to {to}: {e}")
             raise
-
-    def __logger(self, level, message):
-        """
-        Internal method to log messages with the class name prefix.
-        
-        Args:
-            level: Logging level (e.g., logging.INFO, logging.ERROR)
-            message: The message to log
-            
-        Returns:
-            Result of the logging operation
-        """
-        return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")

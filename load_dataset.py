@@ -1,8 +1,7 @@
-import asyncio
 import argparse
+import asyncio
 import os
 import tempfile
-from typing import List, Optional
 
 from fundermapssdk import util
 from fundermapssdk.command import FunderMapsCommand
@@ -41,9 +40,9 @@ class LoadDatasetCommand(FunderMapsCommand):
     async def _load_dataset(
         self,
         dataset_input: str,
-        dataset_layer: List[str] = [],
+        dataset_layer: list[str] | None = None,
         delete_dataset: bool = False,
-        tmp_dir: Optional[str] = None,
+        tmp_dir: str | None = None,
     ) -> bool:
         """Load a dataset into the database.
 
@@ -118,7 +117,7 @@ class LoadDatasetCommand(FunderMapsCommand):
             # Load the dataset into PostGIS
             self.logger.info(f"Loading dataset into database from {local_file_path}")
             try:
-                await self.fundermaps.gdal.to_postgis(local_file_path, *dataset_layer)
+                await self.fundermaps.gdal.to_postgis(local_file_path, *(dataset_layer or []))
                 success = True
             except Exception as e:
                 self.logger.error(

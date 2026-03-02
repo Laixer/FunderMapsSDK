@@ -1,8 +1,11 @@
-import os
 import logging
+import os
+
 import psycopg2
 
 from fundermapssdk.config import DatabaseConfig
+
+logger = logging.getLogger(__name__)
 
 
 class DbProvider:
@@ -10,6 +13,7 @@ class DbProvider:
         self._sdk = sdk
         self.config = config
         self.db = None
+        self.logger = logger
 
         self.sql_directory = os.path.join(self._sdk.sdk_directory, "sql")
 
@@ -18,7 +22,7 @@ class DbProvider:
         Reindex the specified table.
         """
 
-        self.__logger(logging.DEBUG, f"Reindexing table {table}")
+        self.logger.debug(f"Reindexing table {table}")
 
         with self.db.cursor() as cur:
             cur.execute(f"REINDEX TABLE CONCURRENTLY {table};")
@@ -28,7 +32,7 @@ class DbProvider:
         Drop the specified table.
         """
 
-        self.__logger(logging.DEBUG, f"Dropping table {table}")
+        self.logger.debug(f"Dropping table {table}")
 
         with self.db.cursor() as cur:
             cur.execute(f"DROP TABLE IF EXISTS {table};")
@@ -38,7 +42,7 @@ class DbProvider:
         Truncate the specified table.
         """
 
-        self.__logger(logging.DEBUG, f"Truncating table {table}")
+        self.logger.debug(f"Truncating table {table}")
 
         with self.db.cursor() as cur:
             cur.execute(f"TRUNCATE TABLE {table};")
@@ -49,7 +53,7 @@ class DbProvider:
         Rename the specified table.
         """
 
-        self.__logger(logging.DEBUG, f"Renaming table {old_table} to {new_table}")
+        self.logger.debug(f"Renaming table {old_table} to {new_table}")
 
         with self.db.cursor() as cur:
             cur.execute(f"ALTER TABLE {old_table} RENAME TO {new_table};")
@@ -59,7 +63,7 @@ class DbProvider:
         Call the specified procedure.
         """
 
-        self.__logger(logging.DEBUG, f"Calling procedure {procedure}")
+        self.logger.debug(f"Calling procedure {procedure}")
 
         with self.db.cursor() as cur:
             cur.execute(f"CALL {procedure}();")
@@ -69,7 +73,7 @@ class DbProvider:
         Refresh the specified materialized view.
         """
 
-        self.__logger(logging.DEBUG, f"Refreshing materialized view {view}")
+        self.logger.debug(f"Refreshing materialized view {view}")
 
         with self.db.cursor() as cur:
             cur.execute(f"REFRESH MATERIALIZED VIEW CONCURRENTLY {view};")
@@ -80,18 +84,18 @@ class DbProvider:
         """
 
         sql_file_path = f"{script}.sql"
-        self.__logger(logging.DEBUG, f"Running SQL script: {sql_file_path}")
+        self.logger.debug(f"Running SQL script: {sql_file_path}")
 
         file_path = os.path.join(self.sql_directory, sql_file_path)
 
-        with open(file_path, "r") as sql_file:
+        with open(file_path) as sql_file:
             sql_script = sql_file.read()
 
             with self.db.cursor() as cur:
                 cur.execute(sql_script)
 
     def __enter__(self):
-        self.__logger(logging.DEBUG, "Connecting to database")
+        self.logger.debug("Connecting to database")
 
         self.db = psycopg2.connect(
             dbname=self.config.database,
@@ -102,14 +106,11 @@ class DbProvider:
         )
         self.db.autocommit = True
 
-        self.__logger(logging.DEBUG, "Connected to database")
+        self.logger.debug("Connected to database")
 
         return self
 
-    def __exit__(self, type, value, traceback):
-        self.__logger(logging.DEBUG, "Closing database connection")
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.logger.debug("Closing database connection")
 
         self.db.close()
-
-    def __logger(self, level, message):
-        return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")

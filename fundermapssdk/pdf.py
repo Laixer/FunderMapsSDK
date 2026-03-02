@@ -4,11 +4,14 @@ PDF generation functionality for FunderMapsSDK.
 This module provides PDF generation capabilities using the PDF.co API service.
 """
 
-import httpx
 import logging
-from typing import Dict, Any, Optional
+from typing import Any
+
+import httpx
 
 from fundermapssdk.config import PDFCoConfig
+
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.pdf.co/v1"
 
@@ -35,8 +38,8 @@ class PDFGenerationError(Exception):
     def __init__(
         self,
         message: str,
-        status_code: Optional[int] = None,
-        response_data: Optional[Dict[str, Any]] = None,
+        status_code: int | None = None,
+        response_data: dict[str, Any] | None = None,
     ):
         super().__init__(message)
         self.status_code = status_code
@@ -65,6 +68,7 @@ class PDFProvider:
         """
         self._sdk = sdk
         self.config = config
+        self.logger = logger
 
     async def generate_pdf(
         self,
@@ -73,9 +77,9 @@ class PDFProvider:
         paper_size: str = "A4",
         orientation: str = "Portrait",
         margins: str = "10mm",
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         async_mode: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a PDF from a URL using PDF.co service.
 
@@ -95,7 +99,7 @@ class PDFProvider:
             PDFGenerationError: If PDF generation fails
             httpx.RequestError: If HTTP request fails
         """
-        self._log_debug(f"Generating PDF from {url} with name '{name}'")
+        self.logger.debug(f"Generating PDF from {url} with name '{name}'")
 
         # Validate inputs
         if not url or not url.strip():
@@ -124,7 +128,7 @@ class PDFProvider:
             async with httpx.AsyncClient(timeout=timeout_config) as client:
                 api_url = f"{BASE_URL}/pdf/convert/from/url"
 
-                self._log_debug(f"Making request to PDF.co API: {api_url}")
+                self.logger.debug(f"Making request to PDF.co API: {api_url}")
                 response = await client.post(api_url, headers=headers, data=parameters)
 
                 # Handle HTTP errors with custom messages
@@ -133,7 +137,7 @@ class PDFProvider:
                         response.status_code,
                         f"HTTP {response.status_code} - Unknown error",
                     )
-                    self._log_error(f"PDF generation failed: {error_message}")
+                    self.logger.error(f"PDF generation failed: {error_message}")
                     raise PDFGenerationError(
                         error_message,
                         status_code=response.status_code,
@@ -145,32 +149,21 @@ class PDFProvider:
                 # Check for API-level errors in the response
                 if result.get("error", False):
                     error_message = result.get("message", "Unknown API error")
-                    self._log_error(f"PDF.co API error: {error_message}")
+                    self.logger.error(f"PDF.co API error: {error_message}")
                     raise PDFGenerationError(
                         f"PDF.co API error: {error_message}", response_data=result
                     )
 
-                self._log_debug(f"PDF successfully generated from {url}")
+                self.logger.debug(f"PDF successfully generated from {url}")
                 return result
 
         except httpx.TimeoutException as e:
             error_message = f"Request timed out after {request_timeout}s"
-            self._log_error(error_message)
+            self.logger.error(error_message)
             raise PDFGenerationError(error_message) from e
 
         except httpx.RequestError as e:
             error_message = f"HTTP request failed: {str(e)}"
-            self._log_error(error_message)
+            self.logger.error(error_message)
             raise PDFGenerationError(error_message) from e
 
-    def _log_debug(self, message: str) -> None:
-        """Log debug message with class name prefix."""
-        self._sdk._logger.log(logging.DEBUG, f"{self.__class__.__name__}: {message}")
-
-    def _log_error(self, message: str) -> None:
-        """Log error message with class name prefix."""
-        self._sdk._logger.log(logging.ERROR, f"{self.__class__.__name__}: {message}")
-
-    def __logger(self, level, message):
-        """Legacy logger method for backward compatibility."""
-        return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")

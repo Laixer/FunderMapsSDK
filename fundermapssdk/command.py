@@ -1,9 +1,10 @@
+import argparse
+import logging
 import os
 import time
-import logging
-import argparse
-import colorlog
 from pathlib import Path
+
+import colorlog
 from dotenv import load_dotenv
 
 from fundermapssdk import FunderMapsSDK

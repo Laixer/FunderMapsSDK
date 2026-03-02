@@ -1,8 +1,10 @@
-import os
-import logging
 import asyncio
+import logging
+import os
 
 from fundermapssdk.config import DatabaseConfig
+
+logger = logging.getLogger(__name__)
 
 
 class GDALProvider:
@@ -29,13 +31,14 @@ class GDALProvider:
         ogr2ogr(input: str, output: str, *args) -> bool:
             Asynchronously runs the ogr2ogr command to convert geospatial data between formats.
 
-        __logger(level, message):
-            Logs messages using the SDK's logger.
+        logger:
+            Module-level logger instance.
     """
 
     def __init__(self, sdk, config: DatabaseConfig):
         self._sdk = sdk
         self.config = config
+        self.logger = logger
 
     async def version(self) -> tuple[int, int, int]:
         process = await asyncio.create_subprocess_exec(
@@ -124,13 +127,8 @@ class GDALProvider:
         stdout, stderr = await process.communicate()
 
         if process.returncode == 0:
-            self.__logger(
-                logging.DEBUG, f"Command succeeded: {stdout.decode().strip()}"
-            )
+            self.logger.debug(f"Command succeeded: {stdout.decode().strip()}")
         else:
             raise Exception(f"Command failed: {stderr.decode().strip()}")
 
         return process.returncode == 0
-
-    def __logger(self, level, message):
-        return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")

@@ -1,10 +1,9 @@
-import os
-import asyncio
-import tempfile
 import argparse
-import time
+import asyncio
+import os
 import random
-from typing import List
+import tempfile
+import time
 from dataclasses import dataclass, field
 
 from fundermapssdk import util
@@ -20,7 +19,7 @@ class TileBundle:
     upload_dataset: bool = False
     generate_tiles: bool = True
     processing_time: float = field(default=0.0, init=False)
-    errors: List[str] = field(default_factory=list, init=False)
+    errors: list[str] = field(default_factory=list, init=False)
 
     def table_name(self) -> str:
         return f"maplayer.{self.tileset}"
@@ -203,8 +202,8 @@ class ProcessMapsetCommand(FunderMapsCommand):
         return success
 
     async def _process_concurrent(
-        self, tilebundles: List[TileBundle]
-    ) -> List[TileBundle]:
+        self, tilebundles: list[TileBundle]
+    ) -> list[TileBundle]:
         max_workers = self.args.max_workers
         self.logger.info(
             f"Processing {len(tilebundles)} tilesets concurrently with {max_workers} workers"

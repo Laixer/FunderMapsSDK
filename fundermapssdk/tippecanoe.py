@@ -1,7 +1,6 @@
-import logging
 import asyncio
+import logging
 import shutil
-from typing import List, Optional
 
 logger = logging.getLogger("tippecanoe")
 
@@ -10,10 +9,10 @@ logger = logging.getLogger("tippecanoe")
 async def tippecanoe(
     input: str,
     output: str,
-    layer: Optional[str] = None,
+    layer: str | None = None,
     max_zoom_level: int = 15,
     min_zoom_level: int = 10,
-    additional_args: List[str] = None,
+    additional_args: list[str] | None = None,
 ) -> bool:
     """
     Asynchronously runs the tippecanoe command to convert geospatial data to a vector tileset.
@@ -21,10 +20,10 @@ async def tippecanoe(
     Args:
         input (str): The input file path.
         output (str): The output directory path.
-        layer (Optional[str]): The layer name. If None, tippecanoe will use a default name.
-        max_zoom_level (int): The maximum zoom level. Defaults to 15.
-        min_zoom_level (int): The minimum zoom level. Defaults to 10.
-        additional_args (List[str]): Additional arguments to pass to tippecanoe.
+        layer: The layer name. If None, tippecanoe will use a default name.
+        max_zoom_level: The maximum zoom level. Defaults to 15.
+        min_zoom_level: The minimum zoom level. Defaults to 10.
+        additional_args: Additional arguments to pass to tippecanoe.
 
     Returns:
         bool: True if the command was successful, False otherwise.

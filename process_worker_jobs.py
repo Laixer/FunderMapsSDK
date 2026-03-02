@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-import time
-import asyncio
 import argparse
+import asyncio
+import time
 from datetime import datetime, timezone
-from typing import Dict, Any, List
+from typing import Any
 
 from fundermapssdk.command import FunderMapsCommand
 
@@ -48,8 +48,8 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         )
 
     async def _get_pending_jobs(
-        self, job_types: List[str] = None
-    ) -> List[Dict[str, Any]]:
+        self, job_types: list[str] = None
+    ) -> list[dict[str, Any]]:
         """
         Fetch pending jobs from the worker_jobs table.
 
@@ -204,7 +204,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         except Exception as e:
             self.logger.error(f"Failed to mark job {job_id} as failed: {e}")
 
-    async def _process_job(self, job: Dict[str, Any]) -> bool:
+    async def _process_job(self, job: dict[str, Any]) -> bool:
         """
         Process a single job based on its type.
 
@@ -243,7 +243,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
             return False
 
     async def _process_refresh_models_job(
-        self, job_id: int, payload: Dict[str, Any]
+        self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process a refresh_models job."""
         from refresh_models import ModelRefreshCommand
@@ -265,7 +265,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         return await command.execute() == 0
 
     async def _process_load_dataset_job(
-        self, job_id: int, payload: Dict[str, Any]
+        self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process a load_dataset job."""
         from load_dataset import LoadDatasetCommand
@@ -290,7 +290,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
 
         return await command.execute() == 0
 
-    async def _process_mapset_job(self, job_id: int, payload: Dict[str, Any]) -> bool:
+    async def _process_mapset_job(self, job_id: int, payload: dict[str, Any]) -> bool:
         """Process a process_mapset job."""
         from process_mapset import ProcessMapsetCommand
 
@@ -315,7 +315,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         return await command.execute() == 0
 
     async def _process_cleanup_storage_job(
-        self, job_id: int, payload: Dict[str, Any]
+        self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process a cleanup_storage job."""
         from cleanup_storage import CleanupStorageCommand
@@ -334,7 +334,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         return await command.execute() == 0
 
     async def _process_export_product_job(
-        self, job_id: int, payload: Dict[str, Any]
+        self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process an export_product job."""
         from export_product import ProductExportCommand
@@ -353,7 +353,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
 
         return await command.execute() == 0
 
-    async def _generate_single_pdf(self, job_id: int, payload: Dict[str, Any]) -> bool:
+    async def _generate_single_pdf(self, job_id: int, payload: dict[str, Any]) -> bool:
         """Generate a single PDF from a URL."""
         from generate_pdf import PDFGenerateCommand
 
@@ -373,7 +373,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         return await command.execute() == 0
 
     async def _process_send_mail_job(
-        self, job_id: int, payload: Dict[str, Any]
+        self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process a send_mail job."""
         from send_mail import SendMailCommand
@@ -405,7 +405,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
     async def _process_jobs(
         self,
         semaphore: asyncio.Semaphore,
-        job_types: List[str] = None,
+        job_types: list[str] = None,
         timeout: int = 3600,
     ) -> None:
         """

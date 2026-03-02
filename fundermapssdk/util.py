@@ -1,9 +1,9 @@
-import os
-import gzip
 import glob
+import gzip
+import os
 import shutil
-import httpx
 
+import httpx
 
 FILE_ALLOWED_EXTENSIONS = [".geojson", ".gpkg", ".shp", ".zip", ".csv"]
 FILE_MIN_SIZE: int = 1024  # 1 KB
@@ -25,12 +25,11 @@ async def http_download_file(url, dest_path):
     if os.path.exists(dest_path):
         os.remove(dest_path)
 
-    async with httpx.AsyncClient() as client:
-        async with client.stream("GET", url) as response:
-            response.raise_for_status()
-            with open(dest_path, "wb") as file:
-                async for chunk in response.aiter_bytes():
-                    file.write(chunk)
+    async with httpx.AsyncClient() as client, client.stream("GET", url) as response:
+        response.raise_for_status()
+        with open(dest_path, "wb") as file:
+            async for chunk in response.aiter_bytes():
+                file.write(chunk)
 
 
 # TODO: Maybe we do not need this function
@@ -144,9 +143,8 @@ def compress_file(file_path, output_path):
         output_path (str): The path where the compressed file will be saved.
     """
 
-    with open(file_path, "rb") as f_in:
-        with gzip.open(output_path, "wb") as f_out:
-            shutil.copyfileobj(f_in, f_out)
+    with open(file_path, "rb") as f_in, gzip.open(output_path, "wb") as f_out:
+        shutil.copyfileobj(f_in, f_out)
 
 
 def decompress_file(file_path, output_path):
@@ -157,6 +155,5 @@ def decompress_file(file_path, output_path):
         file_path (str): The path to the gzip file to decompress.
         output_path (str): The path where the decompressed file will be saved.
     """
-    with gzip.open(file_path, "rb") as f_in:
-        with open(output_path, "wb") as f_out:
-            shutil.copyfileobj(f_in, f_out)
+    with gzip.open(file_path, "rb") as f_in, open(output_path, "wb") as f_out:
+        shutil.copyfileobj(f_in, f_out)

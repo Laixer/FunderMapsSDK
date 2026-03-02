@@ -1,10 +1,12 @@
-import boto3
 import logging
-import boto3.session
-from typing import Any
 from concurrent.futures import ThreadPoolExecutor
 
+import boto3
+import boto3.session
+
 from fundermapssdk.config import S3Config
+
+logger = logging.getLogger(__name__)
 
 
 class ObjectStorageProvider:
@@ -12,6 +14,7 @@ class ObjectStorageProvider:
         self._sdk = sdk
         self.config = config
         self.client = None
+        self.logger = logger
 
     def upload_file(self, file_path: str, key: str, bucket: None | str = None, *args):
         """
@@ -29,11 +32,11 @@ class ObjectStorageProvider:
         Raises:
             None
         """
-        self.__logger(logging.DEBUG, f"Uploading file {file_path} to {key}")
+        self.logger.debug(f"Uploading file {file_path} to {key}")
 
         self.client.upload_file(file_path, bucket or self.config.bucket, key, *args)
 
-        self.__logger(logging.DEBUG, f"File uploaded to {key}")
+        self.logger.debug(f"File uploaded to {key}")
 
     def download_file(self, file_path: str, key: str, bucket: None | str = None, *args):
         """
@@ -51,11 +54,11 @@ class ObjectStorageProvider:
         Raises:
             None
         """
-        self.__logger(logging.DEBUG, f"Downloading file {key} to {file_path}")
+        self.logger.debug(f"Downloading file {key} to {file_path}")
 
         self.client.download_file(bucket or self.config.bucket, key, file_path, *args)
 
-        self.__logger(logging.DEBUG, f"File downloaded to {file_path}")
+        self.logger.debug(f"File downloaded to {file_path}")
 
     def delete_file(self, key: str, bucket: None | str = None):
         """
@@ -73,18 +76,18 @@ class ObjectStorageProvider:
             ClientError: If deletion fails due to permissions, connectivity issues,
                          or if the file doesn't exist.
         """
-        self.__logger(logging.DEBUG, f"Deleting file {key}")
+        self.logger.debug(f"Deleting file {key}")
 
         self.client.delete_object(Bucket=bucket or self.config.bucket, Key=key)
 
-        self.__logger(logging.DEBUG, f"File deleted {key}")
+        self.logger.debug(f"File deleted {key}")
 
     def upload_directory(
         self,
         directory_path: str,
         key: str = "",
         bucket: None | str = None,
-        extra_args: Any | None = None,
+        extra_args: dict | None = None,
     ):
         """
         Uploads an entire directory to the storage bucket in parallel.
@@ -137,8 +140,7 @@ class ObjectStorageProvider:
         if self._upload_count != len(file_paths):
             raise Exception("Failed to upload all files")
 
-        self.__logger(
-            logging.DEBUG,
+        self.logger.debug(
             f"Uploaded {self._upload_count} files from directory {directory_path}",
         )
 
@@ -149,7 +151,7 @@ class ObjectStorageProvider:
         Returns:
             ObjectStorageProvider: The initialized storage provider instance.
         """
-        self.__logger(logging.DEBUG, "Connecting to S3")
+        self.logger.debug("Connecting to S3")
 
         session = boto3.session.Session()
         self.client = session.client(
@@ -159,30 +161,9 @@ class ObjectStorageProvider:
             aws_secret_access_key=self.config.secret_key,
         )
 
-        self.__logger(logging.DEBUG, "Connected to S3")
+        self.logger.debug("Connected to S3")
 
         return self
 
-    def __exit__(self, type, value, traceback):
-        """
-        Context manager exit point.
-
-        Args:
-            type: Exception type if an exception was raised.
-            value: Exception value if an exception was raised.
-            traceback: Traceback if an exception was raised.
-        """
+    def __exit__(self, exc_type, exc_val, exc_tb):
         pass
-
-    def __logger(self, level, message):
-        """
-        Internal logging helper method.
-
-        Args:
-            level (int): Logging level (e.g., logging.DEBUG, logging.INFO).
-            message (str): Message to log.
-
-        Returns:
-            The result of the SDK's logger.log call.
-        """
-        return self._sdk._logger.log(level, f"{self.__class__.__name__}: {message}")

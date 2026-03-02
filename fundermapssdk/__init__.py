@@ -1,16 +1,13 @@
-import os
 import logging
-from typing import Dict, Any, TypeVar
+import os
+from typing import Any
 
-
+from fundermapssdk.config import DatabaseConfig, MailConfig, PDFCoConfig, S3Config
 from fundermapssdk.db import DbProvider
 from fundermapssdk.gdal import GDALProvider
 from fundermapssdk.mail import MailProvider
 from fundermapssdk.pdf import PDFProvider
-from fundermapssdk.config import DatabaseConfig, S3Config, PDFCoConfig, MailConfig
 from fundermapssdk.storage import ObjectStorageProvider
-
-T = TypeVar("T")
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +54,7 @@ class FunderMapsSDK:
         self.pdf_config = pdf_config
         self.mail_config = mail_config
 
-        self._service_providers: Dict[str, Any] = {}
+        self._service_providers: dict[str, Any] = {}
         self._logger: logging.Logger = kwargs.get("logger", logger)
 
         # Provider configuration mapping
