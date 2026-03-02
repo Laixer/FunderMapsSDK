@@ -1,22 +1,28 @@
-# Ignore Python cache files
+# Version control
+.git/
+.gitignore
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
+.venv/
 
-# Ignore environment variable files
+# Environment files
 .env
 *.env
+*.example
 
-# Ignore temporary files
-*.tmp
-*.log
-
-# Ignore Docker-related files
+# Docker
 Dockerfile
 .dockerignore
 
-# Ignore any other unnecessary files
-*.example
-
-# Ignore the Python virtual environment
-.venv
+# Dev/editor config
+.devcontainer/
+.github/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+*.tmp
+*.log
