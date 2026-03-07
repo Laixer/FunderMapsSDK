@@ -2,7 +2,7 @@ import csv
 import logging
 from pathlib import Path
 
-from fundermapssdk import FunderMapsSDK, app
+from fundermapsworker import FunderMapsWorker
 
 BUCKET: str = "fundermaps"
 OUTPUT_FILE_NAME: str = "analysis_full.gpkg"

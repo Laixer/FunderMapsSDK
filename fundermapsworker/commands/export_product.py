@@ -3,7 +3,7 @@ import csv
 from datetime import datetime
 from pathlib import Path
 
-from fundermapssdk.command import FunderMapsCommand
+from fundermapsworker.command import WorkerCommand
 
 # TODO: Get from the database
 ORGANIZATIONS: list[str] = [
@@ -17,7 +17,7 @@ ORGANIZATIONS: list[str] = [
 ]
 
 
-class ProductExportCommand(FunderMapsCommand):
+class ProductExportCommand(WorkerCommand):
     """Command to export product tracker data for organizations."""
 
     def __init__(self):

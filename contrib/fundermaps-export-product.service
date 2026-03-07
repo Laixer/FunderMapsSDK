@@ -1,14 +1,13 @@
 [Unit]
-Description=FunderMaps ETL - Export Product
+Description=FunderMaps Worker - Submit Export Product Job
 Wants=network-online.target
 After=network-online.target
 
 [Service]
 Type=oneshot
-Environment="IMAGE=fundermaps-sdk:latest"
-# ExecStartPre=/usr/bin/docker pull ${IMAGE}
-ExecStart=/usr/bin/docker run --rm --name fundermaps-export-product --env-file /etc/fundermaps/config.env ${IMAGE} export_product.py --log-simple
-SyslogIdentifier=fundermaps-export-product
+EnvironmentFile=/etc/fundermaps/config.env
+ExecStart=/usr/bin/psql "postgresql://${FUNDERMAPS_DB_USER}:${FUNDERMAPS_DB_PASSWORD}@${FUNDERMAPS_DB_HOST}:${FUNDERMAPS_DB_PORT}/${FUNDERMAPS_DB_NAME}?sslmode=require" -c "INSERT INTO application.worker_jobs (job_type, status) VALUES ('export_product', 'pending')"
+SyslogIdentifier=fundermaps-submit-export
 Restart=on-failure
 RestartSec=30s
 

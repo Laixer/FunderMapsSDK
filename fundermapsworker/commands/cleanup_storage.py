@@ -1,9 +1,9 @@
 import asyncio
 
-from fundermapssdk.command import FunderMapsCommand
+from fundermapsworker.command import WorkerCommand
 
 
-class CleanupStorageCommand(FunderMapsCommand):
+class CleanupStorageCommand(WorkerCommand):
     def __init__(self):
         super().__init__(description="Clean up orphaned file resources")
 

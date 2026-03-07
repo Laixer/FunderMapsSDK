@@ -1,7 +1,7 @@
 [project]
-name = "fundermapssdk"
-version = "0.1.0"
-description = "FunderMaps SDK - Modern Python toolkit for geospatial data processing"
+name = "fundermapsworker"
+version = "0.2.0"
+description = "FunderMaps Worker - ETL pipeline and job runner for geospatial data processing"
 authors = [{ name = "FunderMaps B.V.", email = "info@fundermaps.com" }]
 dependencies = [
     "boto3>=1.38.11",
@@ -43,9 +43,7 @@ Repository = "https://github.com/Laixer/FunderMapsSDK"
 Issues = "https://github.com/Laixer/FunderMapsSDK/issues"
 
 [project.scripts]
-fundermaps-export = "fundermapssdk.command:export_product"
-fundermaps-process = "fundermapssdk.command:process_mapset"
-fundermaps-refresh = "fundermapssdk.command:refresh_models"
+# Entry points not yet wired — commands run via `uv run process_worker_jobs.py`
 
 [build-system]
 requires = ["hatchling"]
@@ -55,7 +53,7 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["fundermapssdk"]
+packages = ["fundermapsworker"]
 
 # Ruff configuration - Modern Python linter and formatter
 [tool.ruff]
@@ -122,7 +120,7 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--verbose",
-    "--cov=fundermapssdk",
+    "--cov=fundermapsworker",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
@@ -134,7 +132,7 @@ markers = [
 
 # Coverage configuration
 [tool.coverage.run]
-source = ["fundermapssdk"]
+source = ["fundermapsworker"]
 omit = ["*/tests/*", "*/test_*", "*/__init__.py"]
 
 [tool.coverage.report]

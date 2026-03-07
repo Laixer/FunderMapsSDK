@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from mailgun.client import Client
 
-from fundermapssdk.config import MailConfig
+from fundermapsworker.config import MailConfig
 
 logger = logging.getLogger(__name__)
 

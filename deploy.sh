@@ -8,10 +8,10 @@ NC='\033[0m' # No Color
 
 echo -e "${GREEN}Starting FunderMaps SDK deployment...${NC}"
 
-# Build Docker container
-echo -e "${YELLOW}Building Docker container...${NC}"
-docker build -t fundermaps-sdk .
-echo -e "${GREEN}Docker container built successfully!${NC}"
+# Build container
+echo -e "${YELLOW}Building container...${NC}"
+podman build -t fundermaps-worker .
+echo -e "${GREEN}Container built successfully!${NC}"
 
 # Check if contrib directory exists
 if [ ! -d "contrib" ]; then

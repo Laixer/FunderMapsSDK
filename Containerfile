@@ -44,7 +44,7 @@ USER eve
 
 # Set working directory and fix permissions
 WORKDIR /app
-COPY . .
+COPY --chown=eve:eve . .
 
 # Configure UV and the environment PATH
 ENV UV_COMPILE_BYTECODE=1

@@ -5,10 +5,10 @@ import asyncio
 import time
 from pathlib import Path
 
-from fundermapssdk.command import FunderMapsCommand
+from fundermapsworker.command import WorkerCommand
 
 
-class PDFGenerateCommand(FunderMapsCommand):
+class PDFGenerateCommand(WorkerCommand):
     """Command to generate PDFs from URLs using the FunderMaps SDK."""
 
     def __init__(self):

@@ -6,10 +6,10 @@ import time
 from datetime import UTC, datetime
 from typing import Any
 
-from fundermapssdk.command import FunderMapsCommand
+from fundermapsworker.command import WorkerCommand
 
 
-class ProcessWorkerJobsCommand(FunderMapsCommand):
+class ProcessWorkerJobsCommand(WorkerCommand):
     """Command to poll and process jobs from the worker_jobs table."""
 
     def __init__(self):
@@ -242,7 +242,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process a refresh_models job."""
-        from refresh_models import ModelRefreshCommand
+        from fundermapsworker.commands.refresh_models import ModelRefreshCommand
 
         self.logger.info(f"Running refresh_models job {job_id}")
 
@@ -258,13 +258,20 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         command.fundermaps = self.fundermaps
         command.logger = self.logger
 
-        return await command.execute() == 0
+        success = await command.execute() == 0
+
+        # Chain: automatically run process_mapset after successful refresh
+        if success:
+            self.logger.info("Refresh complete, chaining process_mapset...")
+            success = await self._process_mapset_job(job_id, {})
+
+        return success
 
     async def _process_load_dataset_job(
         self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process a load_dataset job."""
-        from load_dataset import LoadDatasetCommand
+        from fundermapsworker.commands.load_dataset import LoadDatasetCommand
 
         self.logger.info(f"Running load_dataset job {job_id}")
 
@@ -288,7 +295,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
 
     async def _process_mapset_job(self, job_id: int, payload: dict[str, Any]) -> bool:
         """Process a process_mapset job."""
-        from process_mapset import ProcessMapsetCommand
+        from fundermapsworker.commands.process_mapset import ProcessMapsetCommand
 
         self.logger.info(f"Running process_mapset job {job_id}")
 
@@ -314,7 +321,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process a cleanup_storage job."""
-        from cleanup_storage import CleanupStorageCommand
+        from fundermapsworker.commands.cleanup_storage import CleanupStorageCommand
 
         self.logger.info(f"Running cleanup_storage job {job_id}")
 
@@ -333,7 +340,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process an export_product job."""
-        from export_product import ProductExportCommand
+        from fundermapsworker.commands.export_product import ProductExportCommand
 
         self.logger.info(f"Running export_product job {job_id}")
 
@@ -351,7 +358,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
 
     async def _generate_single_pdf(self, job_id: int, payload: dict[str, Any]) -> bool:
         """Generate a single PDF from a URL."""
-        from generate_pdf import PDFGenerateCommand
+        from fundermapsworker.commands.generate_pdf import PDFGenerateCommand
 
         self.logger.info(f"Running generate_pdf job {job_id}")
 
@@ -372,7 +379,7 @@ class ProcessWorkerJobsCommand(FunderMapsCommand):
         self, job_id: int, payload: dict[str, Any]
     ) -> bool:
         """Process a send_mail job."""
-        from send_mail import SendMailCommand
+        from fundermapsworker.commands.send_mail import SendMailCommand
 
         self.logger.info(f"Running send_mail job {job_id}")
 

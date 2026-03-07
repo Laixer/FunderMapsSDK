@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 import boto3
 import boto3.session
 
-from fundermapssdk.config import S3Config
+from fundermapsworker.config import S3Config
 
 logger = logging.getLogger(__name__)
 

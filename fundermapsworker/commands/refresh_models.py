@@ -4,10 +4,10 @@ import argparse
 import asyncio
 import time
 
-from fundermapssdk.command import FunderMapsCommand
+from fundermapsworker.command import WorkerCommand
 
 
-class ModelRefreshCommand(FunderMapsCommand):
+class ModelRefreshCommand(WorkerCommand):
     """Command to refresh models in the database."""
 
     def __init__(self):
@@ -68,6 +68,7 @@ class ModelRefreshCommand(FunderMapsCommand):
             "data.statistics_product_buildings_restored",
             "data.statistics_postal_code_foundation_type",
             "data.statistics_postal_code_foundation_risk",
+            "data.statistics_postal_code_data_collected",
         ]
 
         if specific_view:
@@ -121,17 +122,17 @@ class ModelRefreshCommand(FunderMapsCommand):
         """Execute the model refresh command."""
         success = True
 
-        if hasattr(self.args, "view") and self.args.view:
+        if getattr(self.args, "view", None):
             self.logger.info(f"Refreshing single view: {self.args.view}")
             return 0 if self._db_refresh_statistics(self.args.view) else 1
 
-        if not hasattr(self.args, "skip_risk") or not self.args.skip_risk:
+        if not getattr(self.args, "skip_risk", False):
             self.logger.info("Step 1: Calculating risk metrics...")
             if not self._db_calculate_risk():
                 success = False
                 self.logger.error("Risk calculation failed")
 
-        if not hasattr(self.args, "skip_statistics") or not self.args.skip_statistics:
+        if not getattr(self.args, "skip_statistics", False):
             self.logger.info("Step 2: Refreshing statistics...")
             if not self._db_refresh_statistics():
                 success = False

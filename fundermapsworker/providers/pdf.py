@@ -9,7 +9,7 @@ from typing import Any
 
 import httpx
 
-from fundermapssdk.config import PDFCoConfig
+from fundermapsworker.config import PDFCoConfig
 
 logger = logging.getLogger(__name__)
 

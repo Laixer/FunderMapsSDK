@@ -7,11 +7,11 @@ from pathlib import Path
 import colorlog
 from dotenv import load_dotenv
 
-from fundermapssdk import FunderMapsSDK
-from fundermapssdk.config import DatabaseConfig, MailConfig, PDFCoConfig, S3Config
+from fundermapsworker import FunderMapsWorker
+from fundermapsworker.config import DatabaseConfig, MailConfig, PDFCoConfig, S3Config
 
 
-class FunderMapsCommand:
+class WorkerCommand:
     """Base class for FunderMaps CLI commands."""
 
     def __init__(self, description: str):
@@ -217,8 +217,8 @@ class FunderMapsCommand:
 
         return logger
 
-    def _initialize_sdk(self) -> FunderMapsSDK:
-        """Initialize FunderMapsSDK with configuration from args."""
+    def _initialize_sdk(self) -> FunderMapsWorker:
+        """Initialize FunderMapsWorker with configuration from args."""
         db_config = DatabaseConfig(
             database=self.args.db_name,
             host=self.args.db_host,
@@ -246,7 +246,7 @@ class FunderMapsCommand:
             sender_address=self.args.mail_sender_address,
         )
 
-        return FunderMapsSDK(
+        return FunderMapsWorker(
             db_config=db_config,
             s3_config=s3_config,
             pdf_config=pdf_config,

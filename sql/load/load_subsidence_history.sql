@@ -10,10 +10,10 @@ BEGIN
         date date not null
     ) ON COMMIT DROP;
 
-    FOR r IN SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'subsidence_building' AND column_name ~ 'v_[0-9]{8}'
+    FOR r IN SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'buildings' AND column_name ~ 'v_[0-9]{8}'
     LOOP
         SELECT TO_DATE(REPLACE(r.column_name, 'v_', ''), 'YYYYMMDD') INTO velocity_date;
-        EXECUTE format('INSERT INTO temp_table_name SELECT identificatie, %s, %s FROM subsidence_building WHERE %s <> 0', r.column_name, quote_literal(to_char(velocity_date, 'YYYY-MM-DD')), r.column_name);
+        EXECUTE format('INSERT INTO temp_table_name SELECT identifica, %s, %s FROM public.buildings WHERE %s <> 0', r.column_name, quote_literal(to_char(velocity_date, 'YYYY-MM-DD')), r.column_name);
 
         INSERT INTO data.subsidence_history
         SELECT b.external_id, ttn.velocity, ttn."date"

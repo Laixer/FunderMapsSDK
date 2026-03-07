@@ -1,15 +1,13 @@
 [Unit]
-Description=FunderMaps ETL - Refresh Models
+Description=FunderMaps Worker - Submit Refresh Models Job
 Wants=network-online.target
 After=network-online.target
-OnSuccess=fundermaps-process-mapset.service
 
 [Service]
 Type=oneshot
-Environment="IMAGE=fundermaps-sdk:latest"
-# ExecStartPre=/usr/bin/docker pull ${IMAGE}
-ExecStart=/usr/bin/docker run --rm --name fundermaps-refresh-models --env-file /etc/fundermaps/config.env ${IMAGE} refresh_models.py --log-simple
-SyslogIdentifier=fundermaps-refresh-models
+EnvironmentFile=/etc/fundermaps/config.env
+ExecStart=/usr/bin/psql "postgresql://${FUNDERMAPS_DB_USER}:${FUNDERMAPS_DB_PASSWORD}@${FUNDERMAPS_DB_HOST}:${FUNDERMAPS_DB_PORT}/${FUNDERMAPS_DB_NAME}?sslmode=require" -c "INSERT INTO application.worker_jobs (job_type, status) VALUES ('refresh_models', 'pending')"
+SyslogIdentifier=fundermaps-submit-refresh
 Restart=on-failure
 RestartSec=30s
 

@@ -6,9 +6,9 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from fundermapssdk import util
-from fundermapssdk.command import FunderMapsCommand
-from fundermapssdk.tippecanoe import tippecanoe
+from fundermapsworker import util
+from fundermapsworker.command import WorkerCommand
+from fundermapsworker.providers.tippecanoe import tippecanoe
 
 
 @dataclass
@@ -42,7 +42,7 @@ MAX_RETRIES = 3
 RETRY_DELAY = 5  # seconds
 
 
-class ProcessMapsetCommand(FunderMapsCommand):
+class ProcessMapsetCommand(WorkerCommand):
     """Command to refresh models in the database."""
 
     def __init__(self):

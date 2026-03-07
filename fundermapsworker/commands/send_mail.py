@@ -1,11 +1,11 @@
 import argparse
 import asyncio
 
-from fundermapssdk.command import FunderMapsCommand
-from fundermapssdk.mail import Email
+from fundermapsworker.command import WorkerCommand
+from fundermapsworker.providers.mail import Email
 
 
-class SendMailCommand(FunderMapsCommand):
+class SendMailCommand(WorkerCommand):
     def __init__(self):
         super().__init__(description="Send email functionality")
 

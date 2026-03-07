@@ -3,7 +3,7 @@ from pathlib import Path
 
 import psycopg2
 
-from fundermapssdk.config import DatabaseConfig
+from fundermapsworker.config import DatabaseConfig
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ class DbProvider:
         self.db = None
         self.logger = logger
 
-        self.sql_directory = Path(self._sdk.sdk_directory) / "sql"
+        self.sql_directory = Path(self._sdk.base_directory) / "sql"
 
     def reindex_table(self, table: str):
         """
@@ -103,6 +103,11 @@ class DbProvider:
             password=self.config.password,
             host=self.config.host,
             port=self.config.port,
+            connect_timeout=10,
+            keepalives=1,
+            keepalives_idle=30,
+            keepalives_interval=10,
+            keepalives_count=5,
         )
         self.db.autocommit = True
 

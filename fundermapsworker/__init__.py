@@ -2,36 +2,21 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from fundermapssdk.config import DatabaseConfig, MailConfig, PDFCoConfig, S3Config
-from fundermapssdk.db import DbProvider
-from fundermapssdk.gdal import GDALProvider
-from fundermapssdk.mail import MailProvider
-from fundermapssdk.pdf import PDFProvider
-from fundermapssdk.storage import ObjectStorageProvider
+from fundermapsworker.config import DatabaseConfig, MailConfig, PDFCoConfig, S3Config
+from fundermapsworker.providers.db import DbProvider
+from fundermapsworker.providers.gdal import GDALProvider
+from fundermapsworker.providers.mail import MailProvider
+from fundermapsworker.providers.pdf import PDFProvider
+from fundermapsworker.providers.storage import ObjectStorageProvider
 
 logger = logging.getLogger(__name__)
 
 
-class FunderMapsSDK:
-    """
-    FunderMapsSDK class represents the main entry point for interacting with the FunderMaps SDK.
+class FunderMapsWorker:
+    """Main entry point for the FunderMaps worker.
 
-    This class provides a unified interface to access various services including database operations,
-    GDAL/geospatial processing, object storage, email services, and PDF generation.
-
-    Attributes:
-        db_config (DatabaseConfig | None): Configuration for database operations.
-        s3_config (S3Config | None): Configuration for S3-compatible object storage.
-        pdf_config (PDFCoConfig | None): Configuration for PDF generation services.
-        mail_config (MailConfig | None): Configuration for email services.
-        sdk_directory (str): Directory path of the SDK installation.
-
-    Properties:
-        db (DbProvider): Database service provider.
-        gdal (GDALProvider): GDAL/geospatial service provider.
-        s3 (ObjectStorageProvider): Object storage service provider.
-        mail (MailProvider): Email service provider.
-        pdf (PDFProvider): PDF generation service provider.
+    Provides lazy-initialized access to service providers: database, GDAL,
+    object storage, email, and PDF generation.
     """
 
     db_config: DatabaseConfig | None
@@ -47,7 +32,7 @@ class FunderMapsSDK:
         mail_config: MailConfig | None = None,
         **kwargs,
     ):
-        self.sdk_directory = Path(__file__).resolve().parent
+        self.base_directory = Path(__file__).resolve().parent
 
         self.db_config = db_config
         self.s3_config = s3_config
@@ -57,7 +42,6 @@ class FunderMapsSDK:
         self._service_providers: dict[str, Any] = {}
         self._logger: logging.Logger = kwargs.get("logger", logger)
 
-        # Provider configuration mapping
         self._provider_configs = {
             "db": (DbProvider, self.db_config, "Database configuration is not set"),
             "gdal": (GDALProvider, self.db_config, "Database configuration is not set"),
@@ -71,19 +55,6 @@ class FunderMapsSDK:
         }
 
     def _get_provider(self, provider_key: str) -> Any:
-        """
-        Generic method to get or create a service provider.
-
-        Args:
-            provider_key: The key identifying the provider type.
-
-        Returns:
-            The initialized service provider.
-
-        Raises:
-            ValueError: If the required configuration is not set.
-            KeyError: If the provider key is not recognized.
-        """
         if provider_key not in self._provider_configs:
             raise KeyError(f"Unknown provider: {provider_key}")
 
@@ -117,3 +88,7 @@ class FunderMapsSDK:
     @property
     def pdf(self) -> PDFProvider:
         return self._get_provider("pdf")
+
+
+# Backwards compatibility alias
+FunderMapsSDK = FunderMapsWorker

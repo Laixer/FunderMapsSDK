@@ -1,6 +1,7 @@
 import logging
 
-from fundermapssdk import FunderMapsSDK, app, util
+from fundermapsworker import FunderMapsWorker
+from fundermapsworker import util
 
 # BASE_URL_BAG: str = "https://service.pdok.nl/lv/bag/atom/downloads/bag-light.gpkg"
 FILE_NAME: str = "bag-light.gpkg"
@@ -27,6 +28,9 @@ async def run(fundermaps: FunderMapsSDK, args):
     await fundermaps.gdal.to_postgis(FILE_NAME)
 
     with fundermaps.db as db:
+        logger.info("Preparing BAG staging tables")
+        db.execute_script("prepare_bag")
+
         logger.info("Loading buildings into geocoder")
         db.execute_script("load_building")
         db.reindex_table("geocoder.building")

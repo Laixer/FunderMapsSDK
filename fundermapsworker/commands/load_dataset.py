@@ -4,11 +4,11 @@ import contextlib
 import tempfile
 from pathlib import Path
 
-from fundermapssdk import util
-from fundermapssdk.command import FunderMapsCommand
+from fundermapsworker import util
+from fundermapsworker.command import WorkerCommand
 
 
-class LoadDatasetCommand(FunderMapsCommand):
+class LoadDatasetCommand(WorkerCommand):
     """Command to load dataset into the database."""
 
     def __init__(self):

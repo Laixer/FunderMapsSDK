@@ -2,7 +2,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from fundermapssdk.config import DatabaseConfig
+from fundermapsworker.config import DatabaseConfig
 
 logger = logging.getLogger(__name__)
 
